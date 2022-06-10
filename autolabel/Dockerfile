@@ -3,7 +3,7 @@ ADD . /app
 WORKDIR /app
 
 # We are installing a dependency here directly into our app source dir
-RUN pip install --target=/app api4jenkins==1.8 requests==2.25.1 PyGithub==1.55
+RUN pip install --target=/app requests==2.25.1 PyGithub==1.55
 
 # A distroless container image with Python and some basics like SSL certificates
 # https://github.com/GoogleContainerTools/distroless

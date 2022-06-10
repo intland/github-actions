@@ -1,14 +1,12 @@
 import os
-from api4jenkins import Jenkins
 from github import Github
 import logging
 import re
 import json
 import requests
-from time import time, sleep
 
 log_level = os.environ.get('INPUT_LOG_LEVEL', 'INFO')
-logging.basicConfig(format='JENKINS_ACTION: %(message)s', level=log_level)
+logging.basicConfig(format='ACTION: %(message)s', level=log_level)
 
 def main():
     access_token = os.environ.get("INPUT_ACCESS_TOKEN")
@@ -21,7 +19,7 @@ def main():
     g = Github(access_token)
     
     pr = getPullRequest(g)
-    teams = getTeams(g, (codebeamer_user, codebeamer_password))
+    teams = getTeams(pr, (codebeamer_user, codebeamer_password))
 
     for l in teams:
         pr.add_to_labels(l)
@@ -42,6 +40,7 @@ def getTeams(pr, cbAuth):
     
     ids = []
     ids.extend(getIds(pr.title))
+    ids.extend(getIds(pr.body))
     
     for c in pr.get_commits():
         ids.extend(getIds(c.commit.message))
@@ -49,10 +48,19 @@ def getTeams(pr, cbAuth):
     teams = []
     for i in set(ids):
         itemGetUrl = f"https://codebeamer.com/cb/api/v3/items/{i}"
-        response = requests.get(url=itemGetUrl, auth=cbAuth)
-        if response.status_code == 200:
-            for t in response.json()["teams"]:
-                teams.append(t["name"])
+        
+        try:
+            logging.info(f"Fetching information from: {itemGetUrl}")
+            response = requests.get(url=itemGetUrl, auth=cbAuth)
+            if response.status_code == 200:
+                logging.info(f"Ticket is found")
+                for t in response.json()["teams"]:
+                    team = t["name"]
+                    logging.info(f"'{team}' is added to teams")
+                    teams.append(t["name"])
+                    
+        except Exception as e:
+             logging.warning(f"Team information cannot be fetched from: {itemGetUrl}", e)
                 
     return set(teams)
         
