@@ -81,7 +81,7 @@ def getTickets(pr, cbAuth):
                 teams = list(map(lambda t: t["name"], response.json()["teams"]))
                 tickets.append(CodebeamerTicket(i, name, teams))
             else:
-                tickets.append(CodebeamerTicket(i, "", []))    
+                logging.info(f"#{i} cannot be resolved to ticket, maybe it is a PR ")    
 
         except Exception as e:
              logging.warning(f"Ticket information cannot be fetched from: {itemGetUrl}", e)
