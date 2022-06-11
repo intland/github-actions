@@ -62,8 +62,6 @@ def getPullRequest(githubApi):
     return githubApi.get_repo(pr_repo_name).get_pull(pr_number)
 
 def getTickets(pr, cbAuth):
-    commits = pr.get_commits()
-    
     ids = []
     ids.extend(getIds(pr.title))
     ids.extend(getIds(pr.body))
