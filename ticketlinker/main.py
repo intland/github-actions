@@ -91,7 +91,9 @@ def getTickets(pr, cbAuth):
 
 def getIds(text):
     if text:
-        return list(map(lambda p: p[1:], filter(lambda p: bool(re.match(r'^#[\d]+$', p)), text.split())))
+        ids = list(map(lambda p: p[1:], filter(lambda p: bool(re.match(r'^#[\d]+$', p)), text.split())))
+        loggin.info(f"'{text}' - found ids: {ids}")
+        return ids
     else:
         return []
 
