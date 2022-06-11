@@ -64,7 +64,7 @@ def getTeams(pr, cbAuth):
         
 def getIds(text):
     if text:
-        return re.findall(r'#([\d]+)', text)
+        return list(map(lambda p: p[1:], filter(lambda p: bool(re.match(r'^#[\d]+$', p)), text.split())))
     else:
         return []
 
