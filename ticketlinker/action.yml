@@ -1,0 +1,19 @@
+name: "Autoassign"
+description: "Add assignees to PR request based on team field of tickets"
+author: "Sandor Zelei"
+inputs:
+  access_token:
+    description: "GitHub token"
+    required: true
+  codebeamer_user:
+    description: "Username of API user"
+    required: true 
+  codebeamer_password:
+    description: "Password of API user"
+    required: true 
+outputs:
+  build_url:
+    description: "Auto assign"
+runs:
+  using: "docker"
+  image: "Dockerfile"
