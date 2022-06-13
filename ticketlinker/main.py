@@ -25,7 +25,15 @@ def main():
     codebeamer_tickets = getTickets(pr, (codebeamer_user, codebeamer_password))
 
     if codebeamer_tickets:
-        pr.create_issue_comment(buildComment(codebeamer_tickets))
+        metadate_id = "ticketlinker"
+        metadata = createMetadata(metadate_id, {}) 
+        content = f"{buildComment(codebeamer_tickets)}\n{metadata}"
+       
+        comment = getCommentById(pr, metadate_id)
+        if comment:
+            comment.edit(content)
+        else:
+            pr.create_issue_comment(content)
 
 def buildComment(codebeamer_tickets):
     if len(codebeamer_tickets) == 1:
@@ -108,8 +116,8 @@ def createMetadata(id, metadata):
     }
     return json.dumps(data)
 
-def getCommentById(id):
-    for comment in getAllComments():
+def getCommentById(pr, id):
+    for comment in getAllComments(pr):
         for data in re.findall('<!--(.*)-->', comment.body):
             try:
                 json_data=json.loads(data)
