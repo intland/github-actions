@@ -135,3 +135,7 @@ def issue_comment(body):
     pr_number = github_event["number"]
 
     g.get_repo(pr_repo_name).get_pull(pr_number).create_issue_comment(body)
+
+
+if __name__ == "__main__":
+    main()

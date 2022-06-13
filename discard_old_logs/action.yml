@@ -2,6 +2,9 @@ name: "Discard-old-logs"
 description: "Find all jobs with logs kept, and discard them"
 author: "Miklos Gergely"
 inputs:
+  url:
+    description: "Jenkins URL including http/https protocol"
+    required: true
   job_name:
     description: "Jenkins job name to build"
     required: true
