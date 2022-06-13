@@ -32,7 +32,7 @@ def main():
         try:
             comment = getCommentById(pr, metadate_id)
         except Exception as e:
-            logging.warning(f"Comments by Id cannot be found", e)
+            logging.warning(f"Comments by Id cannot be found, {e}")
                 
         # if comment:
         #    comment.edit(content)
@@ -96,7 +96,7 @@ def getTickets(pr, cbAuth):
                 logging.info(f"#{i} cannot be resolved to ticket, maybe it is a PR ")
 
         except Exception as e:
-             logging.warning(f"Ticket information cannot be fetched from: {itemGetUrl}", e)
+             logging.warning(f"Ticket information cannot be fetched from: {itemGetUrl}, e: {e}")
              tickets.append(CodebeamerTicket(i, "", []))
 
     return sorted(list(set(tickets)))
