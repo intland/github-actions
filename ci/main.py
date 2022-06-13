@@ -30,7 +30,7 @@ def main():
     job_query_interval = 5
 
     g = Github(os.environ.get("INPUT_ACCESS_TOKEN"))
-    
+
     if username and api_token:
         auth = (username, api_token)
     else:
@@ -92,8 +92,9 @@ def main():
         if result in ('FAILURE', 'ABORTED'):
             raise Exception(result)
         return
-
-    body = f'### [{display_job_name} - Build]({build_url}) status returned **{result}**.'
+    
+    body = buildMetadata("keepLogs", [{ "build": {"fullName": build.get_job().full_name, "number": build.api_json()['number'] }, "enabled": True}])
+    body += f'### [{display_job_name} - Build]({build_url}) status returned **{result}**.'
     t0=time()
     while time() - t0 < job_query_timeout:
         try:
@@ -165,6 +166,14 @@ def issue_comment(body):
     pr_number = github_event["number"]
 
     g.get_repo(pr_repo_name).get_pull(pr_number).create_issue_comment(body)
+
+def buildMetadata(id, metadata):
+    if isinstance(metadata, str):
+        metadata=json.loads(metadata)
+    return json.dumps("<!--{data}-->".format(data={
+        "id": id,
+        "metadata": metadata
+    }))
 
 
 if __name__ == "__main__":
