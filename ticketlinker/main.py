@@ -29,17 +29,18 @@ def main():
         metadate_id = "ticketlinker"
         metadata = createMetadata(metadate_id, {}) 
         content = f"{buildComment(codebeamer_tickets)}\n{metadata}"
-       
+        comment = None
+        
         try:
             comment = getCommentById(pr, metadate_id)
         except Exception as e:
             traceback.print_exc()
-            logging.warning(f"Comments by Id cannot be found, {e}")
+            logging.warning(f"Comments by Id cannot be found, {e}")  
                 
-        # if comment:
-        #    comment.edit(content)
-        #else:
-        pr.create_issue_comment(content)
+        if comment:
+            comment.edit(content)
+        else:
+            pr.create_issue_comment(content)
 
 def buildComment(codebeamer_tickets):
     if len(codebeamer_tickets) == 1:
