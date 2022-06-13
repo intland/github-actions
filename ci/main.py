@@ -92,9 +92,9 @@ def main():
         if result in ('FAILURE', 'ABORTED'):
             raise Exception(result)
         return
-    
+
     body = buildMetadata("keepLogs", [{ "build": {"fullName": build.get_job().full_name, "number": build.api_json()['number'] }, "enabled": True}])
-    body += f'### [{display_job_name} - Build]({build_url}) status returned **{result}**.'
+    body += f'\n### [{display_job_name} - Build]({build_url}) status returned **{result}**.'
     t0=time()
     while time() - t0 < job_query_timeout:
         try:
@@ -170,10 +170,12 @@ def issue_comment(body):
 def buildMetadata(id, metadata):
     if isinstance(metadata, str):
         metadata=json.loads(metadata)
-    return json.dumps("<!--{data}-->".format(data={
-        "id": id,
-        "metadata": metadata
-    }))
+    return "<!--{data}-->".format(
+        data=json.dumps({
+            "id": id,
+            "metadata": metadata
+        }
+    ))
 
 
 if __name__ == "__main__":
