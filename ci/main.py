@@ -93,7 +93,8 @@ def main():
             raise Exception(result)
         return
 
-    body = buildMetadata("keepLogs", [{ "build": {"fullName": build.get_job().full_name, "number": build.api_json()['number'] }, "enabled": True}])
+    keep_logs(build, auth)
+    body = keepLogsMeta(build)
     body += f'\n### [{display_job_name} - Build]({build_url}) status returned **{result}**.'
     t0=time()
     while time() - t0 < job_query_timeout:
@@ -167,15 +168,29 @@ def issue_comment(body):
 
     g.get_repo(pr_repo_name).get_pull(pr_number).create_issue_comment(body)
 
-def buildMetadata(id, metadata):
-    if isinstance(metadata, str):
-        metadata=json.loads(metadata)
+
+def keepLogsMeta(build):
     return "<!--{data}-->".format(
         data=json.dumps({
-            "id": id,
-            "metadata": metadata
-        }
-    ))
+            "id": "keepLogs",
+            "metadata": [
+                {
+                    "build": {
+                        "fullName": build.get_job().full_name,
+                        "number": build.api_json()['number']
+                    },
+                    "enabled": True
+                }
+            ]
+        })
+    )
+
+def keep_logs(build, auth, enabled=True):
+    if build.api_json()['keepLog'] == enabled:
+        return
+    response = requests.post(url=build.url+"toggleLogKeep", auth=auth)
+    if not response.ok:
+        raise Exception(f"Post request returned {response.status_code}")
 
 
 if __name__ == "__main__":
