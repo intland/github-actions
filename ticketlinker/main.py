@@ -119,25 +119,10 @@ def getCommentById(id):
                 if json_data['id'] == id:
                     return comment
 
-def getAllComments():
-    github = Github(os.environ.get("INPUT_ACCESS_TOKEN"))
-
-    github_event_file = open(os.environ.get("GITHUB_EVENT_PATH"), "r")
-    github_event = json.loads(github_event_file.read())
-    github_event_file.close
-
-    pr_repo_name = github_event["pull_request"]["base"]["repo"]["full_name"]
-    pr_number = github_event["number"]
-    comments = github.get_repo(pr_repo_name).get_pull(pr_number).as_issue().get_comments()
+def getAllComments(pullRequest):
     commentsList=[]
-
-    i=comments.totalCount
-    j=0
-    while i > 0:
-        for comment in comments.get_page(j):
-            i-=1
-            commentsList.append(comment)
-        j+=1
+    for comment in pullRequest.as_issue().get_comments():
+        commentsList.append(comment)
     return commentsList
 
 def getIds(text):
