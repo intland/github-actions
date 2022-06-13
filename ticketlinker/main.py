@@ -1,6 +1,7 @@
 import os
 from github import Github
 from github.GithubObject import NotSet
+import traceback
 import logging
 import re
 import json
@@ -32,7 +33,7 @@ def main():
         try:
             comment = getCommentById(pr, metadate_id)
         except Exception as e:
-            print(e)
+            traceback.print_exception(e)
             logging.warning(f"Comments by Id cannot be found, {e}")
                 
         # if comment:
