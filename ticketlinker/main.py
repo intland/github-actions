@@ -13,18 +13,18 @@ def main():
     access_token = os.environ.get("INPUT_ACCESS_TOKEN")
     codebeamer_user = os.environ.get("INPUT_CODEBEAMER_USER")
     codebeamer_password = os.environ.get("INPUT_CODEBEAMER_PASSWORD")
-   
+
     if not access_token:
         raise Exception("access_token parameters must be set")
-        
+
     if not (codebeamer_user and codebeamer_password):
         raise Exception("codebeamer_user and codebeamer_password parameters must be set")
-    
+
     g = Github(access_token)
     pr = getPullRequest(g)
     codebeamer_tickets = getTickets(pr, (codebeamer_user, codebeamer_password))
-    
-    if codebeamer_tickets: 
+
+    if codebeamer_tickets:
         pr.create_issue_comment(buildComment(codebeamer_tickets))
 
 def buildComment(codebeamer_tickets):
@@ -43,8 +43,8 @@ def buildLine(t):
     if t.title:
         body += f" - {t.title}"
     else:
-        body += " - N/A"    
-    
+        body += " - N/A"
+
     if t.teams:
         body += f" - {', '.join(t.teams)}"
 
@@ -64,14 +64,14 @@ def getTickets(pr, cbAuth):
     ids = []
     ids.extend(getIds(pr.title))
     ids.extend(getIds(pr.body))
-    
+
     for c in pr.get_commits():
         ids.extend(getIds(c.commit.message))
-    
+
     tickets = []
     for i in set(ids):
         itemGetUrl = f"https://codebeamer.com/cb/api/v3/items/{i}"
-        
+
         try:
             logging.info(f"Fetching information from: {itemGetUrl}")
             response = requests.get(url=itemGetUrl, auth=cbAuth)
@@ -81,13 +81,64 @@ def getTickets(pr, cbAuth):
                 teams = list(map(lambda t: t["name"], response.json()["teams"]))
                 tickets.append(CodebeamerTicket(i, name, teams))
             else:
-                logging.info(f"#{i} cannot be resolved to ticket, maybe it is a PR ")    
+                logging.info(f"#{i} cannot be resolved to ticket, maybe it is a PR ")
 
         except Exception as e:
              logging.warning(f"Ticket information cannot be fetched from: {itemGetUrl}", e)
              tickets.append(CodebeamerTicket(i, "", []))
-    
+
     return sorted(list(set(tickets)))
+
+def loadMetadata(id, comment):
+    for data in re.findall('<!--(.*)-->', comment.body):
+        try:
+            json_data=json.loads(data)
+        except json.decoder.JSONDecodeError:
+            pass
+        else:
+            if json_data['id'] == id:
+                return json_data['metadata']
+
+def createMetadata(id, metadata):
+    if isinstance(metadata, str):
+        metadata = json.loads(metadata)
+    data={
+        "id": id,
+        "metadata": metadata
+    }
+    return json.dumps(data)
+
+def getCommentById(id):
+    for comment in getAllComments():
+        for data in re.findall('<!--(.*)-->', comment.body):
+            try:
+                json_data=json.loads(data)
+            except json.decoder.JSONDecodeError:
+                pass
+            else:
+                if json_data['id'] == id:
+                    return comment
+
+def getAllComments():
+    github = Github(os.environ.get("INPUT_ACCESS_TOKEN"))
+
+    github_event_file = open(os.environ.get("GITHUB_EVENT_PATH"), "r")
+    github_event = json.loads(github_event_file.read())
+    github_event_file.close
+
+    pr_repo_name = github_event["pull_request"]["base"]["repo"]["full_name"]
+    pr_number = github_event["number"]
+    comments = github.get_repo(pr_repo_name).get_pull(pr_number).as_issue().get_comments()
+    commentsList=[]
+
+    i=comments.totalCount
+    j=0
+    while i > 0:
+        for comment in comments.get_page(j):
+            i-=1
+            commentsList.append(comment)
+        j+=1
+    return commentsList
 
 def getIds(text):
     if text:
@@ -112,7 +163,7 @@ class CodebeamerTicket:
     def __hash__(self):
         return hash(self.id)
 
-    def __eq__(self, other): 
+    def __eq__(self, other):
         if not isinstance(other, CodebeamerTicket):
             return NotImplemented
 
