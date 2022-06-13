@@ -30,10 +30,10 @@ def main():
         content = f"{buildComment(codebeamer_tickets)}\n{metadata}"
        
         comment = getCommentById(pr, metadate_id)
-        if comment:
-            comment.edit(content)
-        else:
-            pr.create_issue_comment(content)
+        # if comment:
+        #    comment.edit(content)
+        #else:
+        pr.create_issue_comment(content)
 
 def buildComment(codebeamer_tickets):
     if len(codebeamer_tickets) == 1:
