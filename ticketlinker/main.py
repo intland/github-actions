@@ -33,7 +33,7 @@ def main():
         try:
             comment = getCommentById(pr, metadate_id)
         except Exception as e:
-            traceback.print_exception(e)
+            traceback.print_exc()
             logging.warning(f"Comments by Id cannot be found, {e}")
                 
         # if comment:
