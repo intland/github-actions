@@ -29,7 +29,11 @@ def main():
         metadata = createMetadata(metadate_id, {}) 
         content = f"{buildComment(codebeamer_tickets)}\n{metadata}"
        
-        comment = getCommentById(pr, metadate_id)
+        try:
+            comment = getCommentById(pr, metadate_id)
+        except Exception as e:
+            logging.warning(f"Comments by Id cannot be found", e)
+                
         # if comment:
         #    comment.edit(content)
         #else:
