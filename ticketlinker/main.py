@@ -118,7 +118,7 @@ def createMetadata(id, metadata):
         "id": id,
         "metadata": metadata
     }
-    return json.dumps(data)
+    return f"<!--{json.dumps(data)}-->"
 
 def getCommentById(pr, id):
     for comment in getAllComments(pr):
