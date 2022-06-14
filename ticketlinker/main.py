@@ -30,7 +30,7 @@ def main():
     println(pr.mergeable)
     t0 = time()
     while time() - t0 < 60 or pr.mergeable:
-        println(pr.mergeable)
+        print(pr.mergeable)
         sleep(10)
         
     codebeamer_tickets = getTickets(pr, (codebeamer_user, codebeamer_password))
