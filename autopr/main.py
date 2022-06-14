@@ -36,7 +36,7 @@ def main():
     logging.info(f"Create Pull request. Base: {base}, Head: {head}, Title: {title}")
     pr = repo.create_pull(title = title, body = "", head = head, base = base)
     
-    println(pr.mergeable)
+    print(pr.mergeable)
     t0 = time()
     while time() - t0 < 60 or pr.mergeable:
         print(pr.mergeable)
