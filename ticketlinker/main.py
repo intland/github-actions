@@ -27,10 +27,11 @@ def main():
     g = Github(access_token)
     pr = getPullRequest(g)
     
-    print(pr.mergeable)
+    logging.info(pr.mergeable)
     t0 = time()
-    while time() - t0 < 180 or pr.mergeable:
-        print(pr.mergeable)
+    while time() - t0 < 180:
+        logging.info(time() - t0)
+        logging.info(pr.mergeable)
         sleep(10)
         
     codebeamer_tickets = getTickets(pr, (codebeamer_user, codebeamer_password))
