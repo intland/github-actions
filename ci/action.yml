@@ -24,9 +24,6 @@ inputs:
   parameters:
     description: 'Build parameters in JSON format e.g. `{"field1":"value1"}`'
     required: false
-  cookies:
-    description: 'Cookies to include in HTTP requests in JSON format e.g. `{"field1":"value1"}`'
-    required: false
   wait:
     description: "Should the runner wait for the build to finish and provide ok status"
     required: false
