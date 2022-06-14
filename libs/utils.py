@@ -1,10 +1,9 @@
 import json
 import logging
-import re
-from time import sleep, time
-from github import Github
 import os
+import re
 import requests
+from time import sleep, time
 
 
 def wait_for_build(build, timeout, interval):
@@ -29,6 +28,7 @@ def wait_for_build(build, timeout, interval):
     logging.info(f"Build has not finished and timed out. Waited for {timeout} seconds.")
     return "TIMEOUT"
 
+
 def issue_comment(githubApi, body):
 
     github_event_file = open(os.environ.get("GITHUB_EVENT_PATH"), "r")
@@ -44,9 +44,10 @@ def issue_comment(githubApi, body):
 def keep_logs(build, auth, enabled=True):
     if build.api_json()['keepLog'] == enabled:
         return
-    response = requests.post(url=build.url+"toggleLogKeep", auth=auth)
+    response = requests.post(url=build.url + "toggleLogKeep", auth=auth)
     if not response.ok:
         raise Exception(f"Post request returned {response.status_code}")
+
 
 def getPullRequest(githubApi):
     github_event_file = open(os.environ.get("GITHUB_EVENT_PATH"), "r")
@@ -58,33 +59,38 @@ def getPullRequest(githubApi):
 
     return githubApi.get_repo(pr_repo_name).get_pull(pr_number)
 
+
 def loadMetadata(id, comment):
     for data in re.findall('<!--(.*)-->', comment.body):
         try:
-            json_data=json.loads(data)
+            json_data = json.loads(data)
         except json.decoder.JSONDecodeError:
             pass
         else:
             if json_data['id'] == id:
                 return json_data['metadata']
 
+
 def createMetadata(id, metadata):
     if isinstance(metadata, str):
         metadata = json.loads(metadata)
-    data={
+    data = {
         "id": id,
         "metadata": metadata
     }
     return f"<!--{json.dumps(data)}-->"
 
+
 def getAllComments(pullRequest):
-    commentsList=[]
+    commentsList = []
     for comment in pullRequest.as_issue().get_comments():
         commentsList.append(comment)
     return commentsList
 
+
 def getOrganization(githubApi):
     return githubApi.get_organization("intland")
+
 
 def getTeams(pr, cbAuth):
     ids = []
@@ -109,9 +115,10 @@ def getTeams(pr, cbAuth):
                     teams.append(t["name"])
 
         except Exception as e:
-             logging.warning(f"Team information cannot be fetched from: {itemGetUrl}", e)
+            logging.warning(f"Team information cannot be fetched from: {itemGetUrl}", e)
 
     return set(teams)
+
 
 def getIds(text):
     if text:

@@ -1,17 +1,17 @@
+import json
+import logging
 import os
+import re
+
 from api4jenkins import Jenkins
 from github import Github
-import logging
-import json
-import requests
-import re
-from time import time, sleep
 
 from libs.utils import *
 
 
 log_level = os.environ.get('INPUT_LOG_LEVEL', 'INFO')
 logging.basicConfig(format='JENKINS_ACTION: %(message)s', level=log_level)
+
 
 def main():
     # Required
@@ -34,7 +34,6 @@ def main():
         auth = None
         logging.info('Username or token not provided. Connecting without authentication.')
 
-
     if cookies:
         try:
             cookies = json.loads(cookies)
@@ -54,20 +53,21 @@ def main():
     githubApi = Github(access_token)
 
     log_keep_metadata = {
-        "id" : "keepLogs",
+        "id": "keepLogs",
         "metadata": []
     }
 
     for log in find_old_logs(getAllComments(getPullRequest(github))):
-        log= json.loads(log)
+        log = json.loads(log)
         logging.debug(log)
         build = jenkins.get_job(log["fullName"]).get_build(log["number"])
         keep_logs(build, auth, False)
         log_keep_metadata["metadata"].append({"build": {"fullName": log["fullName"], "number": log["number"]}, "enabled": False})
     issue_comment(githubApi, "<!--{lkm}-->\n_Discarded old logs_".format(lkm=json.dumps(log_keep_metadata)))
 
+
 def find_old_logs(comments):
-    old_logs=set()
+    old_logs = set()
     for comment in comments:
         for data in re.findall('<!--(.*)-->', comment.body):
             try:

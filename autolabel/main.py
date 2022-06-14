@@ -1,14 +1,14 @@
-import os
-from github import Github
 import logging
-import re
-import json
-import requests
+import os
+
+from github import Github
 
 from libs.utils import *
 
+
 log_level = os.environ.get('INPUT_LOG_LEVEL', 'INFO')
 logging.basicConfig(format='ACTION: %(message)s', level=log_level)
+
 
 def main():
     access_token = os.environ.get("INPUT_ACCESS_TOKEN")
@@ -23,9 +23,8 @@ def main():
     pr = getPullRequest(g)
     teams = getTeams(pr, (codebeamer_user, codebeamer_password))
 
-    for l in teams:
-        pr.add_to_labels(l)
-
+    for team in teams:
+        pr.add_to_labels(team)
 
 
 if __name__ == "__main__":

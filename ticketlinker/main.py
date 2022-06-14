@@ -1,16 +1,17 @@
-import os
-from github import Github
-from github.GithubObject import NotSet
-import traceback
-import logging
-import re
 import json
+import logging
+import os
+import re
 import requests
+import traceback
+
+from github import Github
 
 from libs.utils import *
 
 log_level = os.environ.get('INPUT_LOG_LEVEL', 'INFO')
 logging.basicConfig(format='ACTION: %(message)s', level=log_level)
+
 
 def main():
     access_token = os.environ.get("INPUT_ACCESS_TOKEN")
@@ -44,6 +45,7 @@ def main():
         else:
             pr.create_issue_comment(g, content)
 
+
 def buildComment(codebeamer_tickets):
     if len(codebeamer_tickets) == 1:
         return f"**Ticket:** {buildLine(codebeamer_tickets[0])}"
@@ -53,6 +55,7 @@ def buildComment(codebeamer_tickets):
         body += f"- {buildLine(t)}\n"
 
     return body
+
 
 def buildLine(t):
     body = f"[#{t.id}](https://codebeamer.com/cb/item/{t.id})"
@@ -66,6 +69,7 @@ def buildLine(t):
         body += f" - {', '.join(t.teams)}"
 
     return body
+
 
 def getTickets(pr, cbAuth):
     ids = []
@@ -91,8 +95,8 @@ def getTickets(pr, cbAuth):
                 logging.info(f"#{i} cannot be resolved to ticket, maybe it is a PR ")
 
         except Exception as e:
-             logging.warning(f"Ticket information cannot be fetched from: {itemGetUrl}, e: {e}")
-             tickets.append(CodebeamerTicket(i, "", []))
+            logging.warning(f"Ticket information cannot be fetched from: {itemGetUrl}, e: {e}")
+            tickets.append(CodebeamerTicket(i, "", []))
 
     return sorted(list(set(tickets)))
 
@@ -101,12 +105,13 @@ def getCommentById(pr, id):
     for comment in getAllComments(pr):
         for data in re.findall('<!--(.*)-->', comment.body):
             try:
-                json_data=json.loads(data)
+                json_data = json.loads(data)
             except json.decoder.JSONDecodeError:
                 pass
             else:
                 if json_data['id'] == id:
                     return comment
+
 
 def getIds(text):
     if text:
@@ -115,6 +120,7 @@ def getIds(text):
         return ids
     else:
         return []
+
 
 class CodebeamerTicket:
     def __init__(self, id, title, teams):
@@ -136,6 +142,7 @@ class CodebeamerTicket:
             return NotImplemented
 
         return self.id == other.id
+
 
 if __name__ == "__main__":
     main()

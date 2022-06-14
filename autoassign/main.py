@@ -1,15 +1,15 @@
+import logging
 import os
+
 from github import Github
 from github.GithubObject import NotSet
-import logging
-import re
-import json
-import requests
 
 from libs.utils import *
 
+
 log_level = os.environ.get('INPUT_LOG_LEVEL', 'INFO')
 logging.basicConfig(format='ACTION: %(message)s', level=log_level)
+
 
 def main():
     access_token = os.environ.get("INPUT_ACCESS_TOKEN")
@@ -48,10 +48,12 @@ def main():
         logging.info("Create review request")
         pr.create_review_request(NotSet, reviewer_team_list)
 
+
 def convert(a):
     it_name = iter(map(lambda e: e.name, a))
     it_slug = iter(map(lambda e: e.slug, a))
     return dict(zip(it_name, it_slug))
+
 
 if __name__ == "__main__":
     main()
