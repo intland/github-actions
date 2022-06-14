@@ -28,7 +28,7 @@ def main():
         raise Exception("base parameters must be set")
 
     print("-----------------------------------------")
-    print(getGithubEvent())
+    print(getGithubEvent()["repository"]["full_name"])
     print("-----------------------------------------")
     
     
