@@ -48,4 +48,4 @@ outputs:
     description: "Jenkins build URL"
 runs:
   using: "docker"
-  image: "Dockerfile"
+  image: "../ci.Dockerfile"
