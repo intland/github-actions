@@ -34,7 +34,13 @@ def main():
     repo = g.get_repo(repositoryName)
     
     logging.info(f"Create Pull request. Base: {base}, Head: {head}, Title: {title}")
-    repo.create_pull(title = title, body = "", head = head, base = base)
-
+    pr = repo.create_pull(title = title, body = "", head = head, base = base)
+    
+    println(pr.mergeable)
+    t0 = time()
+    while time() - t0 < 60 or pr.mergeable:
+        println(pr.mergeable)
+        sleep(10)
+        
 if __name__ == "__main__":
     main()
