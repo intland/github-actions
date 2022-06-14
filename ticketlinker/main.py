@@ -25,9 +25,7 @@ def main():
 
     g = Github(access_token)
     pr = getPullRequest(g)
-    
-    wait_for_mergeable_pr(pr, 60)
-    
+        
     codebeamer_tickets = getTickets(pr, (codebeamer_user, codebeamer_password))
 
     if codebeamer_tickets:
