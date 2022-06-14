@@ -27,6 +27,8 @@ def main():
     github_teams = getOrganization(g).get_teams()
     github_teams_cache = convert(github_teams)
     
+    logging.info(f"github_teams_cache: {github_teams_cache}")
+    
     reviewer_team_list = []
     for ct in codebeamer_teams:
         review_team_name = f"{ct} - Reviewers"
