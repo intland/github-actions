@@ -1,0 +1,25 @@
+name: "Discard-old-logs"
+description: "Find all jobs with logs kept, and discard them"
+author: "Miklos Gergely"
+inputs:
+  url:
+    description: "Jenkins URL including http/https protocol"
+    required: true
+  job_name:
+    description: "Jenkins job name to build"
+    required: true
+  username:
+    description: "Jenkins username"
+    required: true
+  api_token:
+    description: "Jenkins API token"
+    required: true
+  access_token:
+    description: "GitHub token"
+    required: false
+  cookies:
+    description: 'Cookies to include in HTTP requests in JSON format e.g. `{"field1":"value1"}`'
+    required: false
+runs:
+  using: "docker"
+  image: "Dockerfile"

@@ -30,7 +30,7 @@ def main():
     job_query_interval = 5
 
     g = Github(os.environ.get("INPUT_ACCESS_TOKEN"))
-    
+
     if username and api_token:
         auth = (username, api_token)
     else:
@@ -93,7 +93,9 @@ def main():
             raise Exception(result)
         return
 
-    body = f'### [{display_job_name} - Build]({build_url}) status returned **{result}**.'
+    keep_logs(build, auth)
+    body = keepLogsMeta(build)
+    body += f'\n### [{display_job_name} - Build]({build_url}) status returned **{result}**.'
     t0=time()
     while time() - t0 < job_query_timeout:
         try:
@@ -165,6 +167,30 @@ def issue_comment(body):
     pr_number = github_event["number"]
 
     g.get_repo(pr_repo_name).get_pull(pr_number).create_issue_comment(body)
+
+
+def keepLogsMeta(build):
+    return "<!--{data}-->".format(
+        data=json.dumps({
+            "id": "keepLogs",
+            "metadata": [
+                {
+                    "build": {
+                        "fullName": build.get_job().full_name,
+                        "number": build.api_json()['number']
+                    },
+                    "enabled": True
+                }
+            ]
+        })
+    )
+
+def keep_logs(build, auth, enabled=True):
+    if build.api_json()['keepLog'] == enabled:
+        return
+    response = requests.post(url=build.url+"toggleLogKeep", auth=auth)
+    if not response.ok:
+        raise Exception(f"Post request returned {response.status_code}")
 
 
 if __name__ == "__main__":
