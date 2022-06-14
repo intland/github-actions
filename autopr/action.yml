@@ -1,0 +1,22 @@
+name: "Autopr"
+description: "Create a PR request"
+author: "Sandor Zelei"
+inputs:
+  access_token:
+    description: "GitHub token"
+    required: true
+  title:
+    description: "Title of PR"
+    required: true
+  head:
+    description: "Head branch"
+    required: true
+  base:
+    description: "Base branch"
+    required: true
+outputs:
+  build_url:
+    description: "Auto PR"
+runs:
+  using: "docker"
+  image: "../autopr.Dockerfile"
