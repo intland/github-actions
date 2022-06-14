@@ -27,9 +27,9 @@ def main():
     g = Github(access_token)
     pr = getPullRequest(g)
     
-    println(pr.mergeable)
+    print(pr.mergeable)
     t0 = time()
-    while time() - t0 < 60 or pr.mergeable:
+    while time() - t0 < 180 or pr.mergeable:
         print(pr.mergeable)
         sleep(10)
         
