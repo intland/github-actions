@@ -7,6 +7,8 @@ import re
 import json
 import requests
 
+from libs.utils import *
+
 log_level = os.environ.get('INPUT_LOG_LEVEL', 'INFO')
 logging.basicConfig(format='ACTION: %(message)s', level=log_level)
 
@@ -27,20 +29,20 @@ def main():
 
     if codebeamer_tickets:
         metadate_id = "ticketlinker"
-        metadata = createMetadata(metadate_id, {}) 
+        metadata = createMetadata(metadate_id, {})
         content = f"{buildComment(codebeamer_tickets)}\n{metadata}"
         comment = None
-        
+
         try:
             comment = getCommentById(pr, metadate_id)
         except Exception as e:
             traceback.print_exc()
-            logging.warning(f"Comments by Id cannot be found, {e}")  
-                
+            logging.warning(f"Comments by Id cannot be found, {e}")
+
         if comment:
             comment.edit(content)
         else:
-            pr.create_issue_comment(content)
+            pr.create_issue_comment(g, content)
 
 def buildComment(codebeamer_tickets):
     if len(codebeamer_tickets) == 1:
@@ -64,16 +66,6 @@ def buildLine(t):
         body += f" - {', '.join(t.teams)}"
 
     return body
-
-def getPullRequest(githubApi):
-    github_event_file = open(os.environ.get("GITHUB_EVENT_PATH"), "r")
-    github_event = json.loads(github_event_file.read())
-    github_event_file.close
-
-    pr_repo_name = github_event["pull_request"]["base"]["repo"]["full_name"]
-    pr_number = github_event["number"]
-
-    return githubApi.get_repo(pr_repo_name).get_pull(pr_number)
 
 def getTickets(pr, cbAuth):
     ids = []
@@ -104,24 +96,6 @@ def getTickets(pr, cbAuth):
 
     return sorted(list(set(tickets)))
 
-def loadMetadata(id, comment):
-    for data in re.findall('<!--(.*)-->', comment.body):
-        try:
-            json_data=json.loads(data)
-        except json.decoder.JSONDecodeError:
-            pass
-        else:
-            if json_data['id'] == id:
-                return json_data['metadata']
-
-def createMetadata(id, metadata):
-    if isinstance(metadata, str):
-        metadata = json.loads(metadata)
-    data={
-        "id": id,
-        "metadata": metadata
-    }
-    return f"<!--{json.dumps(data)}-->"
 
 def getCommentById(pr, id):
     for comment in getAllComments(pr):
@@ -133,12 +107,6 @@ def getCommentById(pr, id):
             else:
                 if json_data['id'] == id:
                     return comment
-
-def getAllComments(pullRequest):
-    commentsList=[]
-    for comment in pullRequest.as_issue().get_comments():
-        commentsList.append(comment)
-    return commentsList
 
 def getIds(text):
     if text:
