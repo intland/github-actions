@@ -3,12 +3,9 @@ import logging
 import os
 import requests
 from time import time, sleep
-
 from api4jenkins import Jenkins
 from github import Github
-
 from libs.utils import *
-
 
 log_level = os.environ.get('INPUT_LOG_LEVEL', 'INFO')
 logging.basicConfig(format='JENKINS_ACTION: %(message)s', level=log_level)
@@ -23,7 +20,6 @@ def main():
     username = os.environ.get("INPUT_USERNAME")
     api_token = os.environ.get("INPUT_API_TOKEN")
     parameters = os.environ.get("INPUT_PARAMETERS")
-    cookies = os.environ.get("INPUT_COOKIES")
     timeout = int(os.environ.get("INPUT_TIMEOUT"))
     start_timeout = int(os.environ.get("INPUT_START_TIMEOUT"))
     interval = int(os.environ.get("INPUT_INTERVAL"))
@@ -33,8 +29,6 @@ def main():
     # Predefined
     job_query_timeout = 60
     job_query_interval = 5
-
-    g = Github(os.environ.get("INPUT_ACCESS_TOKEN"))
 
     if username and api_token:
         auth = (username, api_token)
@@ -50,14 +44,7 @@ def main():
     else:
         parameters = {}
 
-    if cookies:
-        try:
-            cookies = json.loads(cookies)
-        except json.JSONDecodeError as e:
-            raise Exception('`cookies` is not valid JSON.') from e
-    else:
-        cookies = {}
-
+    g = Github(access_token)
     jenkins = Jenkins(url, auth=auth, cookies=cookies)
 
     try:
@@ -65,6 +52,12 @@ def main():
     except Exception as e:
         raise Exception('Could not connect to Jenkins.') from e
 
+    try:
+        wait_for_mergeable_pr(getPullRequest(g), 60)
+    except Exception as e:
+        issue_comment(g, 'Pull request is not mergeable, please resolve your conflict(s)')
+        raise e
+    
     logging.info('Successfully connected to Jenkins.')
 
     queue_item = jenkins.build_job(job_name, **parameters)
@@ -128,11 +121,11 @@ def main():
             s=test_reports_json["skipCount"]
         )
 
-    try:
-        joke = requests.get('https://api.chucknorris.io/jokes/random', timeout=1).json()["value"]
-        body += f"\n\n>{joke}"
-    except e:
-        logging.info(f"API cannot be called:\n{e}")
+    #try:
+    #    joke = requests.get('https://api.chucknorris.io/jokes/random', timeout=1).json()["value"]
+    #    body += f"\n\n>{joke}"
+    #except e:
+    #    logging.info(f"API cannot be called:\n{e}")
 
     issue_comment(g, body)
 
