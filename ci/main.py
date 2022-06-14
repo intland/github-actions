@@ -53,7 +53,8 @@ def main():
         raise Exception('Could not connect to Jenkins.') from e
 
     try:
-        wait_for_mergeable_pr(getPullRequest(g), 60)
+        if access_token:
+            wait_for_mergeable_pr(getPullRequest(g), 60)
     except Exception as e:
         issue_comment(g, 'Pull request is not mergeable, please resolve your conflict(s)')
         raise e
