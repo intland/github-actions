@@ -5,6 +5,15 @@ import re
 import requests
 from time import sleep, time
 
+def wait_for_mergeable_pr(pr, timeout):
+    t0 = time()
+    while time() - t0 < timeout and not pr.mergeable:
+        sleep(10)
+    
+    if pr.mergeable:
+        return
+    
+    raise Exception("Pull request is not mergeable")    
 
 def wait_for_build(build, timeout, interval):
     build_url = build.url
