@@ -29,7 +29,7 @@ def main():
     
     logging.info(pr.mergeable)
     t0 = time()
-    while time() - t0 < 180:
+    while time() - t0 < 180 and !pr.mergeable :
         logging.info(time() - t0)
         logging.info(pr.mergeable)
         sleep(10)
