@@ -48,17 +48,19 @@ def keep_logs(build, auth, enabled=True):
     if not response.ok:
         raise Exception(f"Post request returned {response.status_code}")
 
-
 def getPullRequest(githubApi):
-    github_event_file = open(os.environ.get("GITHUB_EVENT_PATH"), "r")
-    github_event = json.loads(github_event_file.read())
-    github_event_file.close
-
+    github_event = getGithubEvent()
     pr_repo_name = github_event["pull_request"]["base"]["repo"]["full_name"]
     pr_number = github_event["number"]
 
     return githubApi.get_repo(pr_repo_name).get_pull(pr_number)
 
+def getGithubEvent():
+    github_event_file = open(os.environ.get("GITHUB_EVENT_PATH"), "r")
+    github_event = json.loads(github_event_file.read())
+    github_event_file.close
+    
+    return github_event
 
 def loadMetadata(id, comment):
     for data in re.findall('<!--(.*)-->', comment.body):
