@@ -38,7 +38,7 @@ def main():
         pr = repo.create_pull(title = title, body = "", head = head, base = base)
     except Exception as err:
         if err.status == 422:
-            logging.info(f"{err.errors[0].message}")
+            logging.info(f"{err.data}")
         else:
             logging.info("{err}")
         
