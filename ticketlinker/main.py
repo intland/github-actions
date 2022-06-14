@@ -43,7 +43,7 @@ def main():
         if comment:
             comment.edit(content)
         else:
-            pr.create_issue_comment(g, content)
+            pr.create_issue_comment(content)
 
 
 def buildComment(codebeamer_tickets):
