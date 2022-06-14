@@ -1,2 +1,2 @@
 def greeter():
-  "hello world!"
+  print("hello world!")
