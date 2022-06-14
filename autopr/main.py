@@ -33,14 +33,14 @@ def main():
     g = Github(access_token)
     repo = g.get_repo(repositoryName)
     
-    logging.info(f"Create Pull request. Base: {base}, Head: {head}, Title: {title}")
-    pr = repo.create_pull(title = title, body = "", head = head, base = base)
-    
-    print(pr.mergeable)
-    t0 = time()
-    while time() - t0 < 60 or pr.mergeable:
-        print(pr.mergeable)
-        sleep(10)
+    try:
+        logging.info(f"Create Pull request. Base: {base}, Head: {head}, Title: {title}")
+        pr = repo.create_pull(title = title, body = "", head = head, base = base)
+    except Exception as err:
+        if err.status == 422:
+            logging.info(f"{err.errors[0].message}")
+        else:
+            logging.info("{err}")
         
 if __name__ == "__main__":
     main()
