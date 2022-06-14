@@ -27,13 +27,6 @@ def main():
     g = Github(access_token)
     pr = getPullRequest(g)
     
-    logging.info(pr.mergeable)
-    t0 = time()
-    while time() - t0 < 180 and not pr.mergeable :
-        logging.info(time() - t0)
-        logging.info(pr.mergeable)
-        sleep(10)
-        
     codebeamer_tickets = getTickets(pr, (codebeamer_user, codebeamer_password))
 
     if codebeamer_tickets:
