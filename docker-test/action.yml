@@ -3,4 +3,4 @@ description: "Test docker capabilites"
 author: "Miklos Gergely"
 runs:
   using: "docker"
-  image: "docker-test/Dockerfile"
+  image: "../docker-test_Dockerfile"
