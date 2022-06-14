@@ -45,7 +45,7 @@ def main():
         parameters = {}
 
     g = Github(access_token)
-    jenkins = Jenkins(url, auth=auth, cookies=cookies)
+    jenkins = Jenkins(url, auth=auth)
 
     try:
         jenkins.version
