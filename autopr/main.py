@@ -27,8 +27,7 @@ def main():
     if not base:
         raise Exception("base parameters must be set")
 
-    print(getGithubEvent()["organization"])
-    print(getGithubEvent()["name"])
+    print(os.environ.get("GITHUB_EVENT_PATH"))
     print("-----------------------------------------")
     repositoryName = getGithubEvent()["repository"]
     logging.info(f"Repository: {repositoryName}")
