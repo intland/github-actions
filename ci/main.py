@@ -1,13 +1,18 @@
-import os
-from api4jenkins import Jenkins
-from github import Github
-import logging
 import json
+import logging
+import os
 import requests
 from time import time, sleep
 
+from api4jenkins import Jenkins
+from github import Github
+
+from libs.utils import *
+
+
 log_level = os.environ.get('INPUT_LOG_LEVEL', 'INFO')
 logging.basicConfig(format='JENKINS_ACTION: %(message)s', level=log_level)
+
 
 def main():
     # Required
@@ -79,13 +84,13 @@ def main():
 
     build_url = build.url
     if access_token:
-        issue_comment(f'{display_job_name} - Build started [here]({build_url})')
+        issue_comment(g, f'{display_job_name} - Build started [here]({build_url})')
 
     logging.info(f"Build URL: {build_url}")
     print(f"::set-output name=build_url::{build_url}")
     print(f"::notice title=build_url::{build_url}")
 
-    result=wait_for_build(build,timeout,interval)
+    result = wait_for_build(build, timeout, interval)
 
     if not access_token:
         logging.info("No comment.")
@@ -96,77 +101,43 @@ def main():
     keep_logs(build, auth)
     body = keepLogsMeta(build)
     body += f'\n### [{display_job_name} - Build]({build_url}) status returned **{result}**.'
-    t0=time()
+    t0 = time()
     while time() - t0 < job_query_timeout:
         try:
-            duration=build.api_json()["duration"]
+            duration = build.api_json()["duration"]
             if duration != 0:
-                body+='\n{display_job_name} - Build ran _{build_time} ms_'.format(display_job_name=display_job_name, build_time=duration)
+                body += '\n{display_job_name} - Build ran _{build_time} ms_'.format(display_job_name=display_job_name, build_time=duration)
                 break
         except e:
             logging.info(f"Build duration unknown:\n{e}")
         sleep(job_query_interval)
     else:
         logging.info("Error fetching build details")
-        body+="\nError fetching build details"
-        issue_comment(body)
+        body += "\nError fetching build details"
+        issue_comment(g, body)
         raise Exception("Error fetching build details")
 
-    test_reports=build.get_test_report()
+    test_reports = build.get_test_report()
     if build.get_test_report() is None:
-        body+="\n_No test were ran_"
+        body += "\n_No test were ran_"
     else:
-        test_reports_json=test_reports.api_json()
-        body+="\n\n## Test Results:\n**Passed: {p}**\n**Failed: {f}**\n**Skipped: {s}**".format(
-        p=test_reports_json["passCount"],
-        f=test_reports_json["failCount"],
-        s=test_reports_json["skipCount"]
-    )
+        test_reports_json = test_reports.api_json()
+        body += "\n\n## Test Results:\n**Passed: {p}**\n**Failed: {f}**\n**Skipped: {s}**".format(
+            p=test_reports_json["passCount"],
+            f=test_reports_json["failCount"],
+            s=test_reports_json["skipCount"]
+        )
 
     try:
-         joke = requests.get('https://api.chucknorris.io/jokes/random', timeout=1).json()["value"]
-         body+=f"\n\n>{joke}"
+        joke = requests.get('https://api.chucknorris.io/jokes/random', timeout=1).json()["value"]
+        body += f"\n\n>{joke}"
     except e:
         logging.info(f"API cannot be called:\n{e}")
 
-    issue_comment(body)
+    issue_comment(g, body)
 
     if result in ('FAILURE', 'ABORTED'):
         raise Exception(result)
-
-
-def wait_for_build(build,timeout,interval):
-    build_url=build.url
-    t0 = time()
-    sleep(interval)
-    while time() - t0 < timeout:
-        result = build.result
-        if result == 'SUCCESS':
-            logging.info(f'Build successful')
-            return result
-        if result == 'UNSTABLE':
-            logging.info(f'Build unstable')
-            return result
-        if result in ('FAILURE', 'ABORTED'):
-            logging.info(f'Build status returned "{result}". Build has failed ☹️.')
-            return result
-        logging.info(f'Build not finished yet. Waiting {interval} seconds. {build_url}')
-        sleep(interval)
-    logging.info(f"Build has not finished and timed out. Waited for {timeout} seconds.")
-    return "TIMEOUT"
-
-
-def issue_comment(body):
-    g = Github(os.environ.get("INPUT_ACCESS_TOKEN"))
-
-    github_event_file = open(os.environ.get("GITHUB_EVENT_PATH"), "r")
-    github_event = json.loads(github_event_file.read())
-    github_event_file.close
-
-    pr_repo_name = github_event["pull_request"]["base"]["repo"]["full_name"]
-    pr_number = github_event["number"]
-
-    g.get_repo(pr_repo_name).get_pull(pr_number).create_issue_comment(body)
 
 
 def keepLogsMeta(build):
@@ -184,13 +155,6 @@ def keepLogsMeta(build):
             ]
         })
     )
-
-def keep_logs(build, auth, enabled=True):
-    if build.api_json()['keepLog'] == enabled:
-        return
-    response = requests.post(url=build.url+"toggleLogKeep", auth=auth)
-    if not response.ok:
-        raise Exception(f"Post request returned {response.status_code}")
 
 
 if __name__ == "__main__":

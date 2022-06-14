@@ -7,13 +7,13 @@ inputs:
     required: true
   codebeamer_user:
     description: "Username of API user"
-    required: true 
+    required: true
   codebeamer_password:
     description: "Password of API user"
-    required: true 
+    required: true
 outputs:
   build_url:
     description: "Autolabel"
 runs:
   using: "docker"
-  image: "Dockerfile"
+  image: "../autolabel.Dockerfile"

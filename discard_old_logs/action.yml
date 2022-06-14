@@ -22,4 +22,4 @@ inputs:
     required: false
 runs:
   using: "docker"
-  image: "Dockerfile"
+  image: "../discard_old_logs.Dockerfile"
