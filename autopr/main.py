@@ -27,9 +27,11 @@ def main():
     if not base:
         raise Exception("base parameters must be set")
 
+    repositoryName = getGithubEvent()["repository"]
+    logging.info("Repository: {repositoryName}")
+        
     g = Github(access_token)
-    logging.info("")
-    repo = g.get_repo(github.repository)
+    repo = g.get_repo(getGithubEvent()["repository"])
     
     repo.create_pull(title = title, body = "", head = head, base = base)
 
