@@ -26,20 +26,15 @@ def main():
 
     if not base:
         raise Exception("base parameters must be set")
-
-    print("-----------------------------------------")
-    print(getGithubEvent()["repository"]["full_name"])
-    print("-----------------------------------------")
     
-    
-    #repositoryName = getGithubEvent()["repository"]
-    #logging.info(f"Repository: {repositoryName}")
+    repositoryName = getGithubEvent()["repository"]["full_name"]
+    logging.info(f"Repository: {repositoryName}")
         
-    #g = Github(access_token)
-    #repo = g.get_repo(repositoryName)
+    g = Github(access_token)
+    repo = g.get_repo(repositoryName)
     
-    #logging.info(f"Create Pull request. Base: {base}, Head: {head}, Title: {title}")
-    #repo.create_pull(title = title, body = "", head = head, base = base)
+    logging.info(f"Create Pull request. Base: {base}, Head: {head}, Title: {title}")
+    repo.create_pull(title = title, body = "", head = head, base = base)
 
 if __name__ == "__main__":
     main()
