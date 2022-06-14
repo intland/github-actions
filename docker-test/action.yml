@@ -1,0 +1,7 @@
+name: "docker test"
+description: "Test docker capabilites"
+author: "Miklos Gergely"
+runs:
+  using: "docker"
+  image: "docker-test/Dockerfile"
+  working-directory: "./"
