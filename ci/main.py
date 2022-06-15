@@ -27,7 +27,7 @@ def main():
     # Preset
     job_query_timeout = 600
     job_query_interval = 10
-    metadata_id = 'jenkins'
+    metadata_id = f"jenkins-{job_name}"
     
     if username and api_token:
         auth = (username, api_token)
