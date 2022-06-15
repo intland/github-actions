@@ -55,14 +55,18 @@ def issue_comment(githubApi, metadata_id, content, metadata = {}):
     pr = getPullRequest(githubApi)
     
     try:
+        logging.info(f"Try to find comment by {metadata_id}...")
         comment = getCommentById(pr, metadata_id)
+        logging.info(f"Comment is found by {metadata_id}")
     except Exception as e:
         logging.warning(f"Comments by Id cannot be found, {e}")
 
     content += "\n" + createMetadata(metadata_id, metadata)    
     if comment:
+        logging.info("Comment is edited")
         comment.edit(content)
     else:
+        logging.info("New comment is created")
         pr.create_issue_comment(content)
 
         
