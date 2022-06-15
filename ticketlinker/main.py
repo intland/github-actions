@@ -29,21 +29,7 @@ def main():
     codebeamer_tickets = getTickets(pr, (codebeamer_user, codebeamer_password))
 
     if codebeamer_tickets:
-        metadate_id = "ticketlinker"
-        metadata = createMetadata(metadate_id, {})
-        content = f"{buildComment(codebeamer_tickets)}\n{metadata}"
-        comment = None
-
-        try:
-            comment = getCommentById(pr, metadate_id)
-        except Exception as e:
-            traceback.print_exc()
-            logging.warning(f"Comments by Id cannot be found, {e}")
-
-        if comment:
-            comment.edit(content)
-        else:
-            pr.create_issue_comment(content)
+        issue_comment(g, "ticketlinker", f"{buildComment(codebeamer_tickets)}")
 
 
 def buildComment(codebeamer_tickets):
@@ -99,18 +85,6 @@ def getTickets(pr, cbAuth):
             tickets.append(CodebeamerTicket(i, "", []))
 
     return sorted(list(set(tickets)))
-
-
-def getCommentById(pr, id):
-    for comment in getAllComments(pr):
-        for data in re.findall('<!--(.*)-->', comment.body):
-            try:
-                json_data = json.loads(data)
-            except json.decoder.JSONDecodeError:
-                pass
-            else:
-                if json_data['id'] == id:
-                    return comment
 
 
 def getIds(text):
