@@ -16,17 +16,18 @@ logging.basicConfig(format='JENKINS_ACTION: %(message)s', level=log_level)
 def main():
     # Required
     url = os.environ["INPUT_URL"]
-
-    # Optional
     username = os.environ.get("INPUT_USERNAME")
     api_token = os.environ.get("INPUT_API_TOKEN")
-    cookies = os.environ.get("INPUT_COOKIES")
-    access_token = os.environ.get("INPUT_ACCESS_TOKEN")
-    if not access_token:
-        raise Exception("Access token is required to connect to github")
-    github = Github(os.environ.get("INPUT_ACCESS_TOKEN"))
+    job_name = os.environ["INPUT_JOB_NAME"]
 
-    # Predefined
+    # Optional
+    access_token = os.environ.get("INPUT_ACCESS_TOKEN")
+
+    # Preset
+    queue_query_timeout = 600
+    queue_query_interval = 10
+    job_query_timeout = 600
+    job_query_interval = 10
 
     if username and api_token:
         auth = (username, api_token)
@@ -34,15 +35,7 @@ def main():
         auth = None
         logging.info('Username or token not provided. Connecting without authentication.')
 
-    if cookies:
-        try:
-            cookies = json.loads(cookies)
-        except json.JSONDecodeError as e:
-            raise Exception('`cookies` is not valid JSON.') from e
-    else:
-        cookies = {}
-
-    jenkins = Jenkins(url, auth=auth, cookies=cookies)
+    jenkins = Jenkins(url, auth=auth)
 
     try:
         jenkins.version
@@ -50,20 +43,34 @@ def main():
         raise Exception('Could not connect to Jenkins.') from e
     logging.info('Successfully connected to Jenkins.')
 
-    githubApi = Github(access_token)
+    t0 = time()
+    while time() - t0 < queue_query_timeout:
+        try:
+            for queue_item in jenkins.queue.api_json()['items']:
+                if queue_item.get('task').get('name') == 'tmp-test':
+                    q_obj = jenkins.queue.get(queue_item['id'])
+                    if is_build_for_this_pr(q_obj):
+                        q_obj.cancel
+            break
+        finally:
+            sleep(queue_query_interval)
+    else:
+        raise Exception("Queue query timeout")
 
-    log_keep_metadata = {
-        "id": "keepLogs",
-        "metadata": []
-    }
+    t0 = time()
+    while time() - t0 < job_query_timeout:
+        try:
+            for build in jenkins.get_job(job_name).iter_all_builds():
+                if is_build_for_this_pr(build):
+                    build.delete()
+            break
+        finally:
+            sleep(job_query_interval)
+    else:
+        raise Exception("Job query timeout")
 
-    for log in find_old_logs(getAllComments(getPullRequest(github))):
-        log = json.loads(log)
-        logging.debug(log)
-        build = jenkins.get_job(log["fullName"]).get_build(log["number"])
-        keep_logs(build, auth, False)
-        log_keep_metadata["metadata"].append({"build": {"fullName": log["fullName"], "number": log["number"]}, "enabled": False})
-    issue_comment(githubApi, "<!--{lkm}-->\n_Discarded old logs_".format(lkm=json.dumps(log_keep_metadata)))
+    github = Github(access_token)
+    issue_comment(github, f"_Builds running on this PR deleted for job: {job_name}_")
 
 
 def find_old_logs(comments):
