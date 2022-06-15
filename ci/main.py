@@ -98,7 +98,7 @@ def main():
         try:
             duration = build.api_json()["duration"]
             if duration != 0:
-                body += '\n{display_job_name} - Build ran _{build_time} ms_'.format(display_job_name=display_job_name, build_time=duration)
+                body += '\n{display_job_name} - Build ran _{build_time}_'.format(display_job_name = display_job_name, build_time = convertMillisToHumanReadable(duration))
                 break
         except e:
             logging.info(f"Build duration unknown:\n{e}")
