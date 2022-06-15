@@ -16,17 +16,12 @@ logging.basicConfig(format='JENKINS_ACTION: %(message)s', level=log_level)
 def main():
     # Required
     url = os.environ["INPUT_URL"]
-
-    # Optional
     username = os.environ.get("INPUT_USERNAME")
     api_token = os.environ.get("INPUT_API_TOKEN")
-    cookies = os.environ.get("INPUT_COOKIES")
-    access_token = os.environ.get("INPUT_ACCESS_TOKEN")
-    if not access_token:
-        raise Exception("Access token is required to connect to github")
-    github = Github(os.environ.get("INPUT_ACCESS_TOKEN"))
+    job_name = os.environ["INPUT_JOB_NAME"]
 
-    # Predefined
+    # Optional
+    access_token = os.environ.get("INPUT_ACCESS_TOKEN")
 
     if username and api_token:
         auth = (username, api_token)
@@ -50,20 +45,26 @@ def main():
         raise Exception('Could not connect to Jenkins.') from e
     logging.info('Successfully connected to Jenkins.')
 
-    githubApi = Github(access_token)
+    for queue_item in jenkins.queue.api_json()['items']:
+        if queue_item.get('task').get('name') == 'tmp-test':
+            q_obj = jenkins.queue.get(queue_item['id'])
+            if should_delete(q_obj):
+                q_obj.cancel
 
-    log_keep_metadata = {
-        "id": "keepLogs",
-        "metadata": []
-    }
+    for build in jenkins.get_job(job_name).iter_all_builds():
+        if should_delete(build):
+            build.delete()
 
-    for log in find_old_logs(getAllComments(getPullRequest(github))):
-        log = json.loads(log)
-        logging.debug(log)
-        build = jenkins.get_job(log["fullName"]).get_build(log["number"])
-        keep_logs(build, auth, False)
-        log_keep_metadata["metadata"].append({"build": {"fullName": log["fullName"], "number": log["number"]}, "enabled": False})
-    issue_comment(githubApi, "<!--{lkm}-->\n_Discarded old logs_".format(lkm=json.dumps(log_keep_metadata)))
+    github = Github(access_token)
+    issue_comment(github, "_Builds deleted for this PR_")
+
+
+def should_delete(build):
+    for param in build.get_parameters():
+        if param.name == 'CODEBEAMER':
+            github_event = getGithubEvent()
+            return param.value == format('{0}#{1}', github_event['pull_request']['head']['repo']['clone_url'], github_event['pull_request']['head']['ref'])
+    return False
 
 
 def find_old_logs(comments):
