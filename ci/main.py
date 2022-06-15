@@ -116,13 +116,14 @@ def main():
 #    except e:
 #        logging.info(f"API cannot be called:\n{e}")
     
-    issue_comment(g, metadata_id, buildResultMessage(build.get_test_report()), keepLogsMetadata(build))
+    issue_comment(g, metadata_id, f"{body}\n\n{buildResultMessage(build.get_test_report())}", keepLogsMetadata(build))
 
     if result in ('FAILURE', 'ABORTED'):
         raise Exception(result)
 
 
 def buildResultMessage(test_reports):
+    body = ""
     if test_reports is None:
         body += "\n_No test were ran_"
     else:
@@ -131,6 +132,8 @@ def buildResultMessage(test_reports):
             p=test_reports_json["passCount"],
             f=test_reports_json["failCount"],
             s=test_reports_json["skipCount"]
+     
+     return body
             
 def keepLogsMetadata(build):
     fullName = build.get_job().full_name
