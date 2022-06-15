@@ -45,18 +45,22 @@ def wait_for_build(build, timeout, interval):
     logging.info(f"Build has not finished and timed out. Waited for {timeout} seconds.")
     return "TIMEOUT"
 
+def issue_comment(githubApi, content):
+    getPullRequest(githubApi).create_issue_comment(content)
 
-def issue_comment(githubApi, body):
+def issue_comment(githubApi, metadate_id, content):
+    comment = None
+    pr = getPullRequest(githubApi)
+    
+    try:
+        comment = getCommentById(pr, metadate_id)
+    except Exception as e:
+        logging.warning(f"Comments by Id cannot be found, {e}")
 
-    github_event_file = open(os.environ.get("GITHUB_EVENT_PATH"), "r")
-    github_event = json.loads(github_event_file.read())
-    github_event_file.close
-
-    pr_repo_name = github_event["pull_request"]["base"]["repo"]["full_name"]
-    pr_number = github_event["number"]
-
-    githubApi.get_repo(pr_repo_name).get_pull(pr_number).create_issue_comment(body)
-
+    if comment:
+        comment.edit(content)
+    else:
+        pr.create_issue_comment(content)
 
 def keep_logs(build, auth, enabled=True):
     if build.api_json()['keepLog'] == enabled:
@@ -64,7 +68,6 @@ def keep_logs(build, auth, enabled=True):
     response = requests.post(url=build.url + "toggleLogKeep", auth=auth)
     if not response.ok:
         raise Exception(f"Post request returned {response.status_code}")
-
 
 def getPullRequest(githubApi):
     github_event = getGithubEvent()
