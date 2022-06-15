@@ -78,7 +78,7 @@ def main():
 
     build_url = build.url
     if access_token:
-        issue_comment(g, f'{display_job_name} - Build started [here]({build_url})')
+        issue_comment(g, metadata_id, f'{display_job_name} - Build started [here]({build_url})', keepLogsMeta(build))
 
     logging.info(f"Build URL: {build_url}")
 
