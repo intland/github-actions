@@ -45,23 +45,27 @@ def wait_for_build(build, timeout, interval):
     logging.info(f"Build has not finished and timed out. Waited for {timeout} seconds.")
     return "TIMEOUT"
 
+
 def issue_comment(githubApi, content):
     getPullRequest(githubApi).create_issue_comment(content)
 
-def issue_comment(githubApi, metadate_id, content):
+
+def issue_comment(githubApi, metadata_id, content, metadata = {}):
     comment = None
     pr = getPullRequest(githubApi)
     
     try:
-        comment = getCommentById(pr, metadate_id)
+        comment = getCommentById(pr, metadata_id)
     except Exception as e:
         logging.warning(f"Comments by Id cannot be found, {e}")
 
+    content += "\n" + createMetadata(metadata_id, metadata)    
     if comment:
         comment.edit(content)
     else:
         pr.create_issue_comment(content)
 
+        
 def keep_logs(build, auth, enabled=True):
     if build.api_json()['keepLog'] == enabled:
         return
