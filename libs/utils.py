@@ -192,6 +192,19 @@ def retry(func, timeout, interval):
     return wrapper
 
 
+def convertMillisToHumanReadable(millis):
+    millis = int(millis)
+    seconds = int(int(millis / 1000) % 60)
+    minutes = int(int(millis / (1000 * 60)) % 60)
+    hours = int(int(millis / (1000 * 60 * 60)) % 24)
+
+    if hours > 0:
+        return f"{hours}h:{minutes}m:{seconds}s"
+    elif minutes > 0:
+        return f"{minutes}m:{seconds}s"
+    else:
+        return f"m:{seconds}s"
+
 def smth(arg1, arg2):
     print(arg1, arg2)
 
