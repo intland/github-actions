@@ -155,3 +155,19 @@ def getIds(text):
         return list(map(lambda p: p[1:], filter(lambda p: bool(re.match(r'^#[\d]+$', p)), text.split())))
     else:
         return []
+
+
+def retry(timeout, interval):
+    def decorator(func):
+        def wrapper(*args, **kwargs):
+            t0 = time()
+            while time() - t0 < timeout:
+                try:
+                    return func(*args, **kwargs)
+                except Exception as e:
+                    logging.debug(e)
+                finally:
+                    sleep(interval)
+            raise Exception('TIMEOUT')
+        return wrapper
+    return decorator

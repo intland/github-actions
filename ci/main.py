@@ -1,7 +1,6 @@
 import json
 import logging
 import os
-import requests
 from time import time, sleep
 from api4jenkins import Jenkins
 from github import Github
@@ -26,9 +25,9 @@ def main():
     access_token = os.environ.get("INPUT_ACCESS_TOKEN")
     display_job_name = os.environ.get("INPUT_DISPLAY_JOB_NAME")
 
-    # Predefined
-    job_query_timeout = 60
-    job_query_interval = 5
+    # Preset
+    job_query_timeout = 600
+    job_query_interval = 10
 
     if username and api_token:
         auth = (username, api_token)
@@ -58,7 +57,7 @@ def main():
     except Exception as e:
         issue_comment(g, 'Pull request is not mergeable, please resolve your conflict(s)')
         raise e
-    
+
     logging.info('Successfully connected to Jenkins.')
 
     queue_item = jenkins.build_job(job_name, **parameters)
@@ -122,11 +121,11 @@ def main():
             s=test_reports_json["skipCount"]
         )
 
-    #try:
-    #    joke = requests.get('https://api.chucknorris.io/jokes/random', timeout=1).json()["value"]
-    #    body += f"\n\n>{joke}"
-    #except e:
-    #    logging.info(f"API cannot be called:\n{e}")
+#    try:
+#        joke = requests.get('https://api.chucknorris.io/jokes/random', timeout=1).json()["value"]
+#        body += f"\n\n>{joke}"
+#    except e:
+#        logging.info(f"API cannot be called:\n{e}")
 
     issue_comment(g, body)
 

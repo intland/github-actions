@@ -35,15 +35,7 @@ def main():
         auth = None
         logging.info('Username or token not provided. Connecting without authentication.')
 
-    if cookies:
-        try:
-            cookies = json.loads(cookies)
-        except json.JSONDecodeError as e:
-            raise Exception('`cookies` is not valid JSON.') from e
-    else:
-        cookies = {}
-
-    jenkins = Jenkins(url, auth=auth, cookies=cookies)
+    jenkins = Jenkins(url, auth=auth)
 
     try:
         jenkins.version
