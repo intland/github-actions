@@ -9,7 +9,6 @@ from libs.utils import *
 log_level = os.environ.get('INPUT_LOG_LEVEL', 'INFO')
 logging.basicConfig(format='JENKINS_ACTION: %(message)s', level=log_level)
 
-
 def main():
     # Required
     url = os.environ["INPUT_URL"]
@@ -132,6 +131,7 @@ def buildResultMessage(test_reports):
             p=test_reports_json["passCount"],
             f=test_reports_json["failCount"],
             s=test_reports_json["skipCount"]
+        )
      
      return body
             
