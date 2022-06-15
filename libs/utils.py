@@ -9,11 +9,12 @@ def wait_for_mergeable_pr(pr, timeout):
     t0 = time()
     while time() - t0 < timeout:
         is_mergeable = pr.mergeable
+        mergeable_state = pr.mergeable_state
         if is_mergeable:
             logging.info(f"Pull request is mergeable")
             return
             
-        logging.info(f"Mergeable status: {pr.mergeable}")
+        logging.info(f"Mergeable status: {pr.mergeable}, State: {mergeable_state}")
         sleep(10)
         
     raise Exception("Pull request is not mergeable")    
