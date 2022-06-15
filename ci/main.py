@@ -122,19 +122,16 @@ def main():
 
 
 def buildResultMessage(test_reports):
-    body = ""
     if test_reports is None:
-        body += "\n_No test were ran_"
+        return "\n_No test were ran_"
     else:
         test_reports_json = test_reports.api_json()
-        body += "\n\n## Test Results:\n**Passed: {p}**\n**Failed: {f}**\n**Skipped: {s}**".format(
-            p=test_reports_json["passCount"],
-            f=test_reports_json["failCount"],
-            s=test_reports_json["skipCount"]
-        )
-     
-     return body
-            
+        p = test_reports_json["passCount"]
+        f = test_reports_json["failCount"]
+        s = test_reports_json["skipCount"]
+        return f"\n\n## Test Results:\n**Passed: {p}**\n**Failed: {f}**\n**Skipped: {s}**"
+
+    
 def keepLogsMetadata(build):
     fullName = build.get_job().full_name
     number = build.api_json()['number']
