@@ -157,17 +157,23 @@ def getIds(text):
         return []
 
 
-def retry(timeout, interval):
-    def decorator(func):
-        def wrapper(*args, **kwargs):
-            t0 = time()
-            while time() - t0 < timeout:
-                try:
-                    return func(*args, **kwargs)
-                except Exception as e:
-                    logging.debug(e)
-                finally:
-                    sleep(interval)
-            raise Exception('TIMEOUT')
-        return wrapper
-    return decorator
+def retry(func, timeout, interval):
+    def wrapper(*args, **kwargs):
+        t0 = time()
+        while time() - t0 < timeout:
+            try:
+                return func(*args, **kwargs)
+            except Exception as e:
+                logging.debug(e)
+            finally:
+                sleep(interval)
+        raise Exception('TIMEOUT')
+    return wrapper
+
+
+def smth(arg1, arg2):
+    print(arg1, arg2)
+
+
+retried = retry(smth, 600, 10)
+retried("arg1", "arg2")
