@@ -78,7 +78,7 @@ def main():
 
     build_url = build.url
     if access_token:
-        issue_comment(g, metadata_id, f'{display_job_name} - Build started [here]({build_url})', keepLogsMeta(build))
+        issue_comment(g, metadata_id, f'{display_job_name} - Build started [here]({build_url})', keepLogsMetadata(build))
 
     logging.info(f"Build URL: {build_url}")
 
@@ -107,7 +107,7 @@ def main():
     else:
         logging.info("Error fetching build details")
         body += "\nError fetching build details"
-        issue_comment(g, metadata_id, body, keepLogsMeta(build))
+        issue_comment(g, metadata_id, body, keepLogsMetadata(build))
         raise Exception("Error fetching build details")
 
 #    try:
@@ -116,7 +116,7 @@ def main():
 #    except e:
 #        logging.info(f"API cannot be called:\n{e}")
     
-    issue_comment(g, metadata_id, buildResultMessage(build.get_test_report()), keepLogsMeta(build))
+    issue_comment(g, metadata_id, buildResultMessage(build.get_test_report()), keepLogsMetadata(build))
 
     if result in ('FAILURE', 'ABORTED'):
         raise Exception(result)
@@ -132,7 +132,7 @@ def buildResultMessage(test_reports):
             f=test_reports_json["failCount"],
             s=test_reports_json["skipCount"]
             
-def keepLogsMeta(build):
+def keepLogsMetadata(build):
     fullName = build.get_job().full_name
     number = build.api_json()['number']
     return json.dumps([{ "build" : { "fullName" : fullName, "number" : number }, "enabled": True }])
