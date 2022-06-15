@@ -7,12 +7,15 @@ from time import sleep, time
 
 def wait_for_mergeable_pr(pr, timeout):
     t0 = time()
-    while time() - t0 < timeout and not pr.mergeable:
+    while time() - t0 < timeout:
+        is_mergeable = pr.mergeable
+        if is_mergeable:
+            logging.info(f"Pull request is mergeable")
+            return
+            
+        logging.info(f"Mergeable status: {pr.mergeable}")
         sleep(10)
-    
-    if pr.mergeable:
-        return
-    
+        
     raise Exception("Pull request is not mergeable")    
 
 def wait_for_build(build, timeout, interval):
