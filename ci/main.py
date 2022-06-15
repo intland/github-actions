@@ -133,13 +133,9 @@ def buildResultMessage(test_reports):
             s=test_reports_json["skipCount"]
             
 def keepLogsMeta(build):
-    return [{
-                "build": {
-                    "fullName": build.get_job().full_name,
-                    "number": build.api_json()['number']
-                },
-                "enabled": True
-            }]
+    fullName = build.get_job().full_name
+    number = build.api_json()['number']
+    return json.dumps([{ "build" : { "fullName" : fullName, "number" : number }, "enabled": True }])
       
 
 if __name__ == "__main__":
