@@ -113,7 +113,17 @@ def createMetadata(id, metadata):
     }
     return f"<!--{json.dumps(data)}-->"
 
-
+def getCommentById(pr, id):
+    for comment in getAllComments(pr):
+        for data in re.findall('<!--(.*)-->', comment.body):
+            try:
+                json_data = json.loads(data)
+            except json.decoder.JSONDecodeError:
+                pass
+            else:
+                if json_data['id'] == id:
+                    return comment
+                
 def getAllComments(pullRequest):
     commentsList = []
     for comment in pullRequest.as_issue().get_comments():
