@@ -142,6 +142,14 @@ def getTeams(pr, cbAuth):
     return set(teams)
 
 
+def is_build_for_this_pr(build):
+    for param in build.get_parameters():
+        if param.name == 'CODEBEAMER':
+            github_event = getGithubEvent()
+            return param.value == format('{0}#{1}', github_event['pull_request']['head']['repo']['clone_url'], github_event['pull_request']['head']['ref'])
+    return False
+
+
 def getIds(text):
     if text:
         return list(map(lambda p: p[1:], filter(lambda p: bool(re.match(r'^#[\d]+$', p)), text.split())))

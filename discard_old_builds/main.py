@@ -23,6 +23,12 @@ def main():
     # Optional
     access_token = os.environ.get("INPUT_ACCESS_TOKEN")
 
+    # Preset
+    queue_query_timeout = 600
+    queue_query_interval = 10
+    job_query_timeout = 600
+    job_query_interval = 10
+
     if username and api_token:
         auth = (username, api_token)
     else:
@@ -45,26 +51,34 @@ def main():
         raise Exception('Could not connect to Jenkins.') from e
     logging.info('Successfully connected to Jenkins.')
 
-    for queue_item in jenkins.queue.api_json()['items']:
-        if queue_item.get('task').get('name') == 'tmp-test':
-            q_obj = jenkins.queue.get(queue_item['id'])
-            if should_delete(q_obj):
-                q_obj.cancel
+    t0 = time()
+    while time() - t0 < queue_query_timeout:
+        try:
+            for queue_item in jenkins.queue.api_json()['items']:
+                if queue_item.get('task').get('name') == 'tmp-test':
+                    q_obj = jenkins.queue.get(queue_item['id'])
+                    if is_build_for_this_pr(q_obj):
+                        q_obj.cancel
+            break
+        finally:
+            sleep(queue_query_interval)
+    else:
+        raise Exception("Queue query timeout")
 
-    for build in jenkins.get_job(job_name).iter_all_builds():
-        if should_delete(build):
-            build.delete()
+    t0 = time()
+    while time() - t0 < job_query_timeout:
+        try:
+            for build in jenkins.get_job(job_name).iter_all_builds():
+                if is_build_for_this_pr(build):
+                    build.delete()
+            break
+        finally:
+            sleep(job_query_interval)
+    else:
+        raise Exception("Job query timeout")
 
     github = Github(access_token)
-    issue_comment(github, "_Builds deleted for this PR_")
-
-
-def should_delete(build):
-    for param in build.get_parameters():
-        if param.name == 'CODEBEAMER':
-            github_event = getGithubEvent()
-            return param.value == format('{0}#{1}', github_event['pull_request']['head']['repo']['clone_url'], github_event['pull_request']['head']['ref'])
-    return False
+    issue_comment(github, f"_Builds running on this PR deleted for job: {job_name}_")
 
 
 def find_old_logs(comments):
