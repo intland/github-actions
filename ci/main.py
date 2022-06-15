@@ -28,7 +28,8 @@ def main():
     # Preset
     job_query_timeout = 600
     job_query_interval = 10
-
+    metadata_id = 'jenkins'
+    
     if username and api_token:
         auth = (username, api_token)
     else:
@@ -80,8 +81,6 @@ def main():
         issue_comment(g, f'{display_job_name} - Build started [here]({build_url})')
 
     logging.info(f"Build URL: {build_url}")
-    print(f"::set-output name=build_url::{build_url}")
-    print(f"::notice title=build_url::{build_url}")
 
     result = wait_for_build(build, timeout, interval)
 
@@ -92,8 +91,9 @@ def main():
         return
 
     keep_logs(build, auth)
-    body = keepLogsMeta(build)
-    body += f'\n### [{display_job_name} - Build]({build_url}) status returned **{result}**.'
+   
+    body = f'### [{display_job_name} - Build]({build_url}) status returned **{result}**.'
+    
     t0 = time()
     while time() - t0 < job_query_timeout:
         try:
@@ -107,11 +107,23 @@ def main():
     else:
         logging.info("Error fetching build details")
         body += "\nError fetching build details"
-        issue_comment(g, body)
+        issue_comment(g, metadata_id, body, keepLogsMeta(build))
         raise Exception("Error fetching build details")
 
-    test_reports = build.get_test_report()
-    if build.get_test_report() is None:
+#    try:
+#        joke = requests.get('https://api.chucknorris.io/jokes/random', timeout=1).json()["value"]
+#        body += f"\n\n>{joke}"
+#    except e:
+#        logging.info(f"API cannot be called:\n{e}")
+    
+    issue_comment(g, metadata_id, buildResultMessage(build.get_test_report()), keepLogsMeta(build))
+
+    if result in ('FAILURE', 'ABORTED'):
+        raise Exception(result)
+
+
+def buildResultMessage(test_reports):
+    if test_reports is None:
         body += "\n_No test were ran_"
     else:
         test_reports_json = test_reports.api_json()
@@ -119,36 +131,16 @@ def main():
             p=test_reports_json["passCount"],
             f=test_reports_json["failCount"],
             s=test_reports_json["skipCount"]
-        )
-
-#    try:
-#        joke = requests.get('https://api.chucknorris.io/jokes/random', timeout=1).json()["value"]
-#        body += f"\n\n>{joke}"
-#    except e:
-#        logging.info(f"API cannot be called:\n{e}")
-
-    issue_comment(g, body)
-
-    if result in ('FAILURE', 'ABORTED'):
-        raise Exception(result)
-
-
+            
 def keepLogsMeta(build):
-    return "<!--{data}-->".format(
-        data=json.dumps({
-            "id": "keepLogs",
-            "metadata": [
-                {
-                    "build": {
-                        "fullName": build.get_job().full_name,
-                        "number": build.api_json()['number']
-                    },
-                    "enabled": True
-                }
-            ]
-        })
-    )
-
+    return [{
+                "build": {
+                    "fullName": build.get_job().full_name,
+                    "number": build.api_json()['number']
+                },
+                "enabled": True
+            }]
+      
 
 if __name__ == "__main__":
     main()
