@@ -46,8 +46,8 @@ def main():
         retry(removeFromQueue, queue_query_timeout, queue_query_interval)(jenkins, job_name)
 
         logging.info(f"Stopping '{job_name}' build")
-        retry(stopAndRemove, job_query_timeout, job_query_interval)(jenkins, job_name, auth)
-        issue_comment(github, f"_Builds running on this PR deleted for job: {job_name}_")
+        if retry(stopAndRemove, job_query_timeout, job_query_interval)(jenkins, job_name, auth):
+            issue_comment(github, f"removed-{job_name}", f"_Builds running on this PR stopped and deleted for job: {job_name}_")
 
 def connectToJenkins(jenkins):
     try:

@@ -46,10 +46,6 @@ def wait_for_build(build, timeout, interval):
     return "TIMEOUT"
 
 
-def issue_comment(githubApi, content):
-    getPullRequest(githubApi).create_issue_comment(content)
-
-
 def issue_comment(githubApi, metadata_id, content, metadata = {}):
     comment = None
     pr = getPullRequest(githubApi)
