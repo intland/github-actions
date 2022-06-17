@@ -46,7 +46,7 @@ def main():
         retry(removeFromQueue, queue_query_timeout, queue_query_interval)(jenkins, job_name)
 
         logging.info(f"Stopping '{job_name}' build")
-        retry(stopAndRemove, job_query_timeout, job_query_interval)(jenkins, job_name)
+        retry(stopAndRemove, job_query_timeout, job_query_interval)(jenkins, job_name, auth)
         issue_comment(github, f"_Builds running on this PR deleted for job: {job_name}_")
 
 def connectToJenkins(jenkins):
@@ -57,7 +57,7 @@ def connectToJenkins(jenkins):
     except Exception as e:
         raise Exception('Could not connect to Jenkins.') from e
 
-def stopAndRemove(jenkins, job_name):
+def stopAndRemove(jenkins, job_name, auth):
     job = jenkins.get_job(job_name)
     if not job:
         logging.info(f"Job is not found by name: {job_name}")
@@ -71,6 +71,7 @@ def stopAndRemove(jenkins, job_name):
     for build in builds:
         if is_build_for_this_pr(build):
             logging.info(f"Build of {job_name} job will be stopped and removed")
+            keep_logs(build, auth, False)
             build.stop()
             build.delete()
 
