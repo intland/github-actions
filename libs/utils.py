@@ -167,7 +167,7 @@ def is_build_for_this_pr(build):
     for param in build.get_parameters():
         if param.name == 'CODEBEAMER':
             github_event = getGithubEvent()
-            return param.value == format('{0}#{1}', github_event['pull_request']['head']['repo']['clone_url'], github_event['pull_request']['head']['ref'])
+            return param.value == '{0}#{1}'.format(github_event['pull_request']['head']['repo']['clone_url'], github_event['pull_request']['head']['ref'])
     return False
 
 
