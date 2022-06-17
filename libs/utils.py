@@ -188,7 +188,7 @@ def retry(func, timeout, interval):
             except Exception as e:
                 logging.info("Something happened, re-try again...")
                 logging.info(e)
-            finally:
+                print(e)
                 sleep(interval)
         raise Exception('TIMEOUT')
     return wrapper
