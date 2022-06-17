@@ -205,6 +205,23 @@ def convertMillisToHumanReadable(millis):
     else:
         return f"m:{seconds}s"
 
+def find_old_logs(metadata_id, comments):
+    old_logs = set()
+    for comment in comments:
+        for data in re.findall('<!--(.*)-->', comment.body):
+            try:
+                json_data = json.loads(data)
+            except json.decoder.JSONDecodeError as e:
+                logging.debug(f"{data}\nNot valid json:\n{e} ")
+            else:
+                if json_data["id"] == metadata_id:
+                    for log_data in json_data['metadata']:
+                        if log_data["enabled"]:
+                            old_logs.add(json.dumps(log_data["build"]))
+                        else:
+                            old_logs.discard(json.dumps(log_data["build"]))
+    return old_logs
+
 def smth(arg1, arg2):
     print(arg1, arg2)
 

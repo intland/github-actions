@@ -5,8 +5,8 @@ inputs:
   url:
     description: "Jenkins URL including http/https protocol"
     required: true
-  job_name:
-    description: "Jenkins job name to query"
+  job_names:
+    description: "Jenkins job names to query. Comma separated list"
     required: true
   username:
     description: "Jenkins username"
