@@ -1,6 +1,7 @@
 import json
 import logging
 import os
+from pickle import FALSE, TRUE
 import re
 
 from api4jenkins import Jenkins
@@ -57,11 +58,23 @@ def connectToJenkins(jenkins):
         raise Exception('Could not connect to Jenkins.') from e
 
 def stopAndRemove(jenkins, job_name):
-    for build in jenkins.get_job(job_name).iter_all_builds():
+    job = jenkins.get_job(job_name)
+    if not job:
+        logging.info(f"Job is not found by name: {job_name}")
+        return FALSE
+
+    builds = job.iter_all_builds()
+    if not builds:
+        logging.info("No builds for job")
+        return FALSE
+
+    for build in builds:
         if is_build_for_this_pr(build):
             logging.info(f"Build of '{build.get_job().name}' job will be stopped and removed")
             build.stop()
             build.delete()
+
+    return TRUE
 
 def removeFromQueue(jenkins, job_name):
     for queue_item in jenkins.queue.api_json()['items']:
@@ -72,7 +85,8 @@ def removeFromQueue(jenkins, job_name):
             if is_build_for_this_pr(q_obj):
                 logging.info(f"'{name}' will be canceled")
                 q_obj.cancel
-
+    
+    return TRUE
 
 if __name__ == "__main__":
     main()
