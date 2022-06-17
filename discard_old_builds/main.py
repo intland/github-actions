@@ -63,7 +63,7 @@ def stopAndRemove(jenkins, job_name):
         logging.info(f"Job is not found by name: {job_name}")
         return FALSE
 
-    builds = job.iter_all_builds()
+    builds = job.iter_builds()
     if not builds:
         logging.info("No builds for job")
         return FALSE
