@@ -23,9 +23,9 @@ def main():
     access_token = os.environ.get("INPUT_ACCESS_TOKEN")
 
     # Preset
-    queue_query_timeout = 600
+    queue_query_timeout = 60
     queue_query_interval = 10
-    job_query_timeout = 600
+    job_query_timeout = 60
     job_query_interval = 10
 
     if username and api_token:
