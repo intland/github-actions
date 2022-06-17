@@ -60,17 +60,17 @@ def connectToJenkins(jenkins):
 def stopAndRemove(jenkins, job_name):
     job = jenkins.get_job(job_name)
     if not job:
-        logging.info(f"Job is not found by name: {job_name}")
+        #logging.info(f"Job is not found by name: {job_name}")
         return FALSE
 
     builds = job.iter_builds()
     if not builds:
-        logging.info("No builds for job")
+        #logging.info("No builds for job")
         return FALSE
 
     for build in builds:
         if is_build_for_this_pr(build):
-            logging.info(f"Build of {job_name} job will be stopped and removed")
+            #logging.info(f"Build of {job_name} job will be stopped and removed")
             build.stop()
             build.delete()
 
