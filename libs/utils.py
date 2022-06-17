@@ -183,13 +183,10 @@ def retry(func, timeout, interval):
         t0 = time()
         while time() - t0 < timeout:
             try:
-                logging.info(f"Running {func.__name__}")
                 return func(*args, **kwargs)
             except Exception as e:
-                logging.info("Something happened, re-try again...")
-                logging.info(e)
-                print(e)
                 sleep(interval)
+                logging.info("Something happened, re-try again... {e}")
         raise Exception('TIMEOUT')
     return wrapper
 

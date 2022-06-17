@@ -70,7 +70,7 @@ def stopAndRemove(jenkins, job_name):
 
     for build in builds:
         if is_build_for_this_pr(build):
-            logging.info(f"Build of '{build.get_job().name}' job will be stopped and removed")
+            logging.info(f"Build of {job_name} job will be stopped and removed")
             build.stop()
             build.delete()
 
