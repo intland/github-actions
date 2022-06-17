@@ -59,11 +59,11 @@ def issue_comment(githubApi, metadata_id, content, metadata = {}):
 
     content += "\n" + createMetadata(metadata_id, metadata)    
     if comment:
-        logging.info("Comment is edited")
-        comment.edit(content)
-    else:
-        logging.info("New comment is created")
-        pr.create_issue_comment(content)
+        logging.info("Comment is deleted")
+        comment.delete()
+    
+    logging.info("New comment is created")
+    pr.create_issue_comment(content)
 
         
 def keep_logs(build, auth, enabled=True):

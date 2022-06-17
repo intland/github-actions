@@ -73,7 +73,7 @@ def stopAndRemove(jenkins, job_name, auth):
             logging.info(f"Build of {job_name} job will be stopped and removed")
             keep_logs(build, auth, False)
             build.stop()
-            build.delete()
+#            build.delete()
 
     return TRUE
 
