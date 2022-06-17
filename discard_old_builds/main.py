@@ -35,17 +35,22 @@ def main():
 
     jenkins = Jenkins(url, auth=auth)
     github = Github(access_token)
-
-    retry(connectToJenkins, 60, 10)(jenkins)
     
+    retry(connectToJenkins, 60, 10)(jenkins)
+
     for job_name in job_names.split(','):
         job_name = job_name.strip()
+
+        logging.info(f"Removing '{job_name}' from queue")
         retry(removeFromQueue, queue_query_timeout, queue_query_interval)(jenkins, job_name)
+
+        logging.info(f"Stopping '{job_name}' build")
         retry(stopAndRemove, job_query_timeout, job_query_interval)(jenkins, job_name)
         issue_comment(github, f"_Builds running on this PR deleted for job: {job_name}_")
 
 def connectToJenkins(jenkins):
     try:
+        logging.info(f"Try to connect to jenkins")
         jenkins.version
         logging.info('Successfully connected to Jenkins.')
     except Exception as e:
