@@ -109,14 +109,14 @@ def keepLogsMetadata(build):
 def waitForBuildExecution(build):
     duration = build.api_json()["duration"]
     if not duration:
-        raise Exception((f'Build has not finished yet. Waiting few seconds.')
+        raise Exception(f'Build has not finished yet. Waiting few seconds.')
 
     return duration
 
 def waitForBuild(queue_item):
     build = queue_item.get_build()
     if not build:
-        raise Exception((f'Build not started yet. Waiting few seconds.')
+        raise Exception(f'Build not started yet. Waiting few seconds.')
     
     logging.info(f'Build has been started.') 
     return build    
