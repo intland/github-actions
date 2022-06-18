@@ -35,51 +35,23 @@ def main():
         auth = None
         logging.info('Username or token not provided. Connecting without authentication.')
 
-    if parameters:
-        try:
-            parameters = json.loads(parameters)
-        except json.JSONDecodeError as e:
-            raise Exception('`parameters` is not valid JSON.') from e
-    else:
-        parameters = {}
-
+    parameters = convertToJson(parameters)
+    
     g = Github(access_token)
-    jenkins = Jenkins(url, auth=auth)
+    jenkins = Jenkins(url, auth = auth)
 
-    try:
-        jenkins.version
-    except Exception as e:
-        raise Exception('Could not connect to Jenkins.') from e
-
-    try:
-        if access_token:
-            wait_for_mergeable_pr(getPullRequest(g), 60)
-    except Exception as e:
-        issue_comment(g, 'Pull request is not mergeable, please resolve your conflict(s)')
-        raise e
-
+    logging.info('Try to connect to Jenkins....')
+    retry(connectToJenkins, 60, 10)(jenkins)
     logging.info('Successfully connected to Jenkins.')
 
+    logging.info('Start a build.')
     queue_item = jenkins.build_job(job_name, **parameters)
-
-    logging.info('Requested to build job.')
-
-    t0 = time()
-    sleep(interval)
-    while time() - t0 < start_timeout:
-        build = queue_item.get_build()
-        if build:
-            break
-        logging.info(f'Build not started yet. Waiting {interval} seconds.')
-        sleep(interval)
-    else:
-        raise Exception(f"Could not obtain build and timed out. Waited for {start_timeout} seconds.")
-
+    build = retry(waitForBuild, start_timeout, interval)(queue_item)
     build_url = build.url
+    logging.info(f"Build URL: {build_url}")
+
     if access_token:
         issue_comment(g, metadata_id, f'{display_job_name} - Build started [here]({build_url})', keepLogsMetadata(build))
-
-    logging.info(f"Build URL: {build_url}")
 
     result = wait_for_build(build, timeout, interval)
 
@@ -89,37 +61,33 @@ def main():
             raise Exception(result)
         return
 
-    keep_logs(build, auth)
-   
+    retry(keep_logs, 60, 10)(build, auth)
+    
     body = f'### [{display_job_name} - Build]({build_url}) status returned **{result}**.'
     
-    t0 = time()
-    while time() - t0 < job_query_timeout:
-        try:
-            duration = build.api_json()["duration"]
-            if duration != 0:
-                body += '\n{display_job_name} - Build ran _{build_time}_'.format(display_job_name = display_job_name, build_time = convertMillisToHumanReadable(duration))
-                break
-        except e:
-            logging.info(f"Build duration unknown:\n{e}")
-        sleep(job_query_interval)
-    else:
+    try:
+        duration = retry(waitForBuildExecution, job_query_timeout, job_query_interval)(build)
+        body += '\n{display_job_name} - Build ran _{build_time}_'.format(display_job_name = display_job_name, build_time = convertMillisToHumanReadable(duration))
+    except e:
         logging.info("Error fetching build details")
         body += "\nError fetching build details"
         issue_comment(g, metadata_id, body, keepLogsMetadata(build))
         raise Exception("Error fetching build details")
 
-#    try:
-#        joke = requests.get('https://api.chucknorris.io/jokes/random', timeout=1).json()["value"]
-#        body += f"\n\n>{joke}"
-#    except e:
-#        logging.info(f"API cannot be called:\n{e}")
-    
     issue_comment(g, metadata_id, f"{body}\n\n{buildResultMessage(build.get_test_report())}", keepLogsMetadata(build))
 
     if result in ('FAILURE', 'ABORTED'):
         raise Exception(result)
 
+
+def convertToJson(parameters):
+    if parameters:
+        try:
+            return json.loads(parameters)
+        except json.JSONDecodeError as e:
+            raise Exception('`parameters` is not valid JSON.') from e
+    
+    return {}
 
 def buildResultMessage(test_reports):
     if test_reports is None:
@@ -136,7 +104,30 @@ def keepLogsMetadata(build):
     fullName = build.get_job().full_name
     number = build.api_json()['number']
     return json.dumps([{ "build" : { "fullName" : fullName, "number" : number }, "enabled": True }])
-      
+
+
+def waitForBuildExecution(build):
+    duration = build.api_json()["duration"]
+    if not duration:
+        raise Exception((f'Build has not finished yet. Waiting few seconds.')
+
+    return duration
+
+def waitForBuild(queue_item):
+    build = queue_item.get_build()
+    if not build:
+        raise Exception((f'Build not started yet. Waiting few seconds.')
+    
+    logging.info(f'Build has been started.') 
+    return build    
+   
+def connectToJenkins(jenkins):
+    try:
+        logging.info(f"Try to connect to jenkins")
+        jenkins.version
+        logging.info('Successfully connected to Jenkins.')
+    except Exception as e:
+        raise Exception('Could not connect to Jenkins.') from e
 
 if __name__ == "__main__":
     main()
