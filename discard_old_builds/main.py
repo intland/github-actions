@@ -61,21 +61,23 @@ def stopAndRemove(jenkins, job_name, auth):
     job = jenkins.get_job(job_name)
     if not job:
         logging.info(f"Job is not found by name: {job_name}")
-        return FALSE
+        return False
 
     builds = job.iter_builds()
     if not builds:
         logging.info("No builds for job")
-        return FALSE
-
+        return False
+    
+    has_build_stopped = False
     for build in builds:
         if is_build_for_this_pr(build):
             logging.info(f"Build of {job_name} job will be stopped and removed")
             keep_logs(build, auth, False)
             build.stop()
-#            build.delete()
+            has_build_stopped = True
+#            build.delete() Do not remove the build, docker container must be stopped
 
-    return TRUE
+    return has_build_stopped
 
 def removeFromQueue(jenkins, job_name):
     for queue_item in jenkins.queue.api_json()['items']:
