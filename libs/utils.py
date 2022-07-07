@@ -220,11 +220,3 @@ def find_old_logs(metadata_id, comments):
                         else:
                             old_logs.discard(json.dumps(log_data["build"]))
     return old_logs
-
-
-def smth(arg1, arg2):
-    print(arg1, arg2)
-
-
-retried = retry(smth, 600, 10)
-retried("arg1", "arg2")
