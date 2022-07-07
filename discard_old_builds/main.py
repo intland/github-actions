@@ -1,8 +1,5 @@
-import json
 import logging
 import os
-from pickle import FALSE, TRUE
-import re
 
 from api4jenkins import Jenkins
 from github import Github
@@ -11,6 +8,7 @@ from libs.utils import *
 
 log_level = os.environ.get('INPUT_LOG_LEVEL', 'INFO')
 logging.basicConfig(format='JENKINS_ACTION: %(message)s', level=log_level)
+
 
 def main():
     # Required
@@ -36,7 +34,7 @@ def main():
 
     jenkins = Jenkins(url, auth=auth)
     github = Github(access_token)
-    
+
     retry(connectToJenkins, 60, 10)(jenkins)
 
     for job_name in job_names.split(','):
@@ -49,6 +47,7 @@ def main():
         if retry(stopAndRemove, job_query_timeout, job_query_interval)(jenkins, job_name, auth):
             issue_comment(github, f"removed-{job_name}", f"_Builds running on this PR stopped and deleted for job: {job_name}_")
 
+
 def connectToJenkins(jenkins):
     try:
         logging.info(f"Try to connect to jenkins")
@@ -56,6 +55,7 @@ def connectToJenkins(jenkins):
         logging.info('Successfully connected to Jenkins.')
     except Exception as e:
         raise Exception('Could not connect to Jenkins.') from e
+
 
 def stopAndRemove(jenkins, job_name, auth):
     job = jenkins.get_job(job_name)
@@ -67,7 +67,7 @@ def stopAndRemove(jenkins, job_name, auth):
     if not builds:
         logging.info("No builds for job")
         return False
-    
+
     has_build_stopped = False
     for build in builds:
         if is_build_for_this_pr(build):
@@ -79,6 +79,7 @@ def stopAndRemove(jenkins, job_name, auth):
 
     return has_build_stopped
 
+
 def removeFromQueue(jenkins, job_name):
     for queue_item in jenkins.queue.api_json()['items']:
         name = queue_item.get('task').get('name')
@@ -88,8 +89,9 @@ def removeFromQueue(jenkins, job_name):
             if is_build_for_this_pr(q_obj):
                 logging.info(f"'{name}' will be canceled")
                 q_obj.cancel
-    
-    return TRUE
+
+    return True
+
 
 if __name__ == "__main__":
     main()
