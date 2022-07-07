@@ -9,6 +9,7 @@ from libs.utils import *
 log_level = os.environ.get('INPUT_LOG_LEVEL', 'INFO')
 logging.basicConfig(format='JENKINS_ACTION: %(message)s', level=log_level)
 
+
 def main():
     # Required
     url = os.environ["INPUT_URL"]
@@ -28,7 +29,7 @@ def main():
     job_query_timeout = 600
     job_query_interval = 10
     metadata_id = f"jenkins-{job_name}"
-    
+
     if username and api_token:
         auth = (username, api_token)
     else:
@@ -36,9 +37,9 @@ def main():
         logging.info('Username or token not provided. Connecting without authentication.')
 
     parameters = convertToJson(parameters)
-    
+
     g = Github(access_token)
-    jenkins = Jenkins(url, auth = auth)
+    jenkins = Jenkins(url, auth=auth)
 
     logging.info('Try to connect to Jenkins....')
     retry(connectToJenkins, 60, 10)(jenkins)
@@ -62,12 +63,12 @@ def main():
         return
 
     retry(keep_logs, 60, 10)(build, auth)
-    
+
     body = f'### [{display_job_name} - Build]({build_url}) status returned **{result}**.'
-    
+
     try:
         duration = retry(waitForBuildExecution, job_query_timeout, job_query_interval)(build)
-        body += '\n{display_job_name} - Build ran _{build_time}_'.format(display_job_name = display_job_name, build_time = convertMillisToHumanReadable(duration))
+        body += '\n{display_job_name} - Build ran _{build_time}_'.format(display_job_name=display_job_name, build_time=convertMillisToHumanReadable(duration))
     except e:
         logging.info("Error fetching build details")
         body += "\nError fetching build details"
@@ -86,8 +87,9 @@ def convertToJson(parameters):
             return json.loads(parameters)
         except json.JSONDecodeError as e:
             raise Exception('`parameters` is not valid JSON.') from e
-    
+
     return {}
+
 
 def buildResultMessage(test_reports):
     if test_reports is None:
@@ -99,11 +101,11 @@ def buildResultMessage(test_reports):
         s = test_reports_json["skipCount"]
         return f"\n\n## Test Results:\n**Passed: {p}**\n**Failed: {f}**\n**Skipped: {s}**"
 
-    
+
 def keepLogsMetadata(build):
     fullName = build.get_job().full_name
     number = build.api_json()['number']
-    return json.dumps([{ "build" : { "fullName" : fullName, "number" : number }, "enabled": True }])
+    return json.dumps([{"build": {"fullName": fullName, "number": number}, "enabled": True}])
 
 
 def waitForBuildExecution(build):
@@ -113,14 +115,16 @@ def waitForBuildExecution(build):
 
     return duration
 
+
 def waitForBuild(queue_item):
     build = queue_item.get_build()
     if not build:
         raise Exception(f'Build not started yet. Waiting few seconds.')
-    
-    logging.info(f'Build has been started.') 
-    return build    
-   
+
+    logging.info(f'Build has been started.')
+    return build
+
+
 def connectToJenkins(jenkins):
     try:
         logging.info(f"Try to connect to jenkins")
@@ -128,6 +132,7 @@ def connectToJenkins(jenkins):
         logging.info('Successfully connected to Jenkins.')
     except Exception as e:
         raise Exception('Could not connect to Jenkins.') from e
+
 
 if __name__ == "__main__":
     main()
