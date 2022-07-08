@@ -46,10 +46,10 @@ def wait_for_build(build, timeout, interval):
     return "TIMEOUT"
 
 
-def issue_comment(githubApi, metadata_id, content, metadata = {}):
+def issue_comment(githubApi, metadata_id, content, metadata={}):
     comment = None
     pr = getPullRequest(githubApi)
-    
+
     try:
         logging.info(f"Try to find comment by {metadata_id}...")
         comment = getCommentById(pr, metadata_id)
@@ -57,21 +57,22 @@ def issue_comment(githubApi, metadata_id, content, metadata = {}):
     except Exception as e:
         logging.warning(f"Comments by Id cannot be found, {e}")
 
-    content += "\n" + createMetadata(metadata_id, metadata)    
+    content += "\n" + createMetadata(metadata_id, metadata)
     if comment:
         logging.info("Comment is deleted")
         comment.delete()
-    
+
     logging.info("New comment is created")
     pr.create_issue_comment(content)
 
-        
+
 def keep_logs(build, auth, enabled=True):
     if build.api_json()['keepLog'] == enabled:
         return
     response = requests.post(url=build.url + "toggleLogKeep", auth=auth)
     if not response.ok:
         raise Exception(f"Post request returned {response.status_code}")
+
 
 def getPullRequest(githubApi):
     github_event = getGithubEvent()
@@ -109,6 +110,7 @@ def createMetadata(id, metadata):
     }
     return f"<!--{json.dumps(data)}-->"
 
+
 def getCommentById(pr, id):
     for comment in getAllComments(pr):
         for data in re.findall('<!--(.*)-->', comment.body):
@@ -119,7 +121,8 @@ def getCommentById(pr, id):
             else:
                 if json_data['id'] == id:
                     return comment
-                
+
+
 def getAllComments(pullRequest):
     commentsList = []
     for comment in pullRequest.as_issue().get_comments():
@@ -200,6 +203,7 @@ def convertMillisToHumanReadable(millis):
     else:
         return f"m:{seconds}s"
 
+
 def find_old_logs(metadata_id, comments):
     old_logs = set()
     for comment in comments:
@@ -216,10 +220,3 @@ def find_old_logs(metadata_id, comments):
                         else:
                             old_logs.discard(json.dumps(log_data["build"]))
     return old_logs
-
-def smth(arg1, arg2):
-    print(arg1, arg2)
-
-
-retried = retry(smth, 600, 10)
-retried("arg1", "arg2")
