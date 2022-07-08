@@ -43,7 +43,7 @@ def main():
     retry(connectToJenkins, 60, 10)(jenkins)
 
     logging.info('Start a build.')
-    queue_item = jenkins.build_job(job_name, **parameters)
+    queue_item = retry(jenkins.build_job, 60, 10)(job_name, **parameters)
     build = retry(waitForBuild, start_timeout, interval)(queue_item)
     build_url = build.url
     logging.info(f"Build URL: {build_url}")
