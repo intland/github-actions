@@ -1,7 +1,6 @@
 import json
 import logging
 import os
-from time import time, sleep
 from api4jenkins import Jenkins
 from github import Github
 from libs.utils import *
@@ -41,9 +40,7 @@ def main():
     g = Github(access_token)
     jenkins = Jenkins(url, auth=auth)
 
-    logging.info('Try to connect to Jenkins....')
     retry(connectToJenkins, 60, 10)(jenkins)
-    logging.info('Successfully connected to Jenkins.')
 
     logging.info('Start a build.')
     queue_item = jenkins.build_job(job_name, **parameters)
@@ -54,7 +51,7 @@ def main():
     if access_token:
         issue_comment(g, metadata_id, f'{display_job_name} - Build started [here]({build_url})', keepLogsMetadata(build))
 
-    result = wait_for_build(build, timeout, interval)
+    result = retry(wait_for_build, 60, 10)(build, timeout, interval)
 
     if not access_token:
         logging.info("No comment.")
@@ -69,7 +66,7 @@ def main():
     try:
         duration = retry(waitForBuildExecution, job_query_timeout, job_query_interval)(build)
         body += '\n{display_job_name} - Build ran _{build_time}_'.format(display_job_name=display_job_name, build_time=convertMillisToHumanReadable(duration))
-    except e:
+    except Exception as e:
         logging.info("Error fetching build details")
         body += "\nError fetching build details"
         issue_comment(g, metadata_id, body, keepLogsMetadata(build))
