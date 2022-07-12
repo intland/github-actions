@@ -28,4 +28,9 @@ def main():
 
     g = Github(access_token)
     repo = g.get_repo(repository_name)
-    repo.create_pull(owner=repo.owner.login, repo=repo.name, base=target_branch, head=head_branch)
+    pr = repo.create_pull(owner=repo.owner.login, repo=repo.name, base=target_branch, head=head_branch)
+    print(pr.url)
+
+
+if __name__ == '__main__':
+    main()
