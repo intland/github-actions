@@ -5,7 +5,8 @@ from github import Github
 
 from libs.utils import *
 
-log_level = os.environ.get('INPUT_LOG_LEVEL', 'INFO')
+# log_level = os.environ.get('INPUT_LOG_LEVEL', 'INFO')
+log_level = "DEBUG"
 logging.basicConfig(format='ACTION: %(message)s', level=log_level)
 
 
