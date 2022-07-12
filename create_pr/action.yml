@@ -1,0 +1,19 @@
+name: "CreatePR"
+description: "Create a PR from head and target branch"
+author: "Miklos Gergely"
+inputs:
+  access_token:
+    description: "GitHub token"
+    required: true
+  head_branch:
+    description: "branch with your changes"
+    required: false
+  target_branch:
+    description: "branch to send your changes to"
+    required: false
+  repository_name:
+    description: "full name of the repo e.g.: intland/cbdev-git"
+    required: false
+runs:
+  using: "docker"
+  image: "../create_pr.Dockerfile"
