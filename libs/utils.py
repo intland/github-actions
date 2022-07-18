@@ -1,8 +1,11 @@
+import imp
 import json
 import logging
 import os
 import re
 import requests
+from subprocess import run
+from sys import stderr
 from time import sleep, time
 
 
@@ -220,3 +223,19 @@ def find_old_logs(metadata_id, comments):
                         else:
                             old_logs.discard(json.dumps(log_data["build"]))
     return old_logs
+
+
+def runs(command, verbose=0):
+    resp = run(command.split(), capture_output=True)
+    if resp.returncode:
+        raise Exception(resp.stderr.decode('utf8'))
+    if verbose >= 2:
+        print(f"START `{command}`")
+    if verbose:
+        if resp.stdout:
+            print(resp.stdout.decode('utf8'))
+        if resp.stderr:
+            print(resp.stderr.decode('utf8'), file=stderr)
+    if verbose >= 2:
+        print(f"END `{command}`\n")
+    return resp
