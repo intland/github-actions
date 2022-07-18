@@ -1,5 +1,5 @@
-name: "MergeBranch"
-description: "Create a merge branch and PR from two branches"
+name: "CreatePR"
+description: "Create a PR from two branches"
 author: "Miklos Gergely"
 inputs:
   access_token:
@@ -16,4 +16,4 @@ inputs:
     required: false
 runs:
   using: "docker"
-  image: "../merge_branch.Dockerfile"
+  image: "../create_pr.Dockerfile"
