@@ -28,7 +28,10 @@ def main():
     if not (access_token := os.environ.get("INPUT_ACCESS_TOKEN")):
         raise Exception("access_token parameters must be set")
 
-    draft = os.environ.get("INPUT_DRAFT", False)
+    if not (draft := os.environ.get("INPUT_DRAFT")):
+        draft = False
+    elif draft.lower() in ["true", "yes"]:
+        draft = True
 
     g = Github(access_token)
 
