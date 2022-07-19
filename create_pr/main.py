@@ -28,10 +28,14 @@ def main():
     if not (access_token := os.environ.get("INPUT_ACCESS_TOKEN")):
         raise Exception("access_token parameters must be set")
 
-    draft = False
+    draft = os.environ.get("INPUT_DRAFT", False)
 
     g = Github(access_token)
+
     repo = g.get_repo(repository_name)
+    if repo.get_pulls(base=target_branch, head=head_branch).totalCount > 0:
+        logging.info(f"PR already exists for Merge {head_branch} into {target_branch}")
+        return
     pr = repo.create_pull(title=f"Merge {head_branch} into {target_branch}", body="", base=target_branch, head=head_branch, draft=draft)
     logging.info(pr.url)
 
