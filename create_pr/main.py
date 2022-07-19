@@ -28,9 +28,11 @@ def main():
     if not (access_token := os.environ.get("INPUT_ACCESS_TOKEN")):
         raise Exception("access_token parameters must be set")
 
+    draft = False
+
     g = Github(access_token)
     repo = g.get_repo(repository_name)
-    pr = repo.create_pull(owner=repo.owner.login, repo=repo.name, base=target_branch, head=head_branch)
+    pr = repo.create_pull(title=f"Merge {head_branch} into {target_branch}", body="", base=target_branch, head=head_branch, draft=draft)
     logging.info(pr.url)
 
 
