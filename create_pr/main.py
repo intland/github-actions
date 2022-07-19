@@ -13,17 +13,17 @@ def main():
     if (head_branch := os.environ.get("INPUT_HEAD_BRANCH")) is None:
         if (head_branch := os.environ.get("HEAD_BRANCH")) is None:
             raise Exception("head branch can't be determined from parameters or environment variables")
-    logging.info(head_branch)
+    logging.info(f"head_branch: {head_branch}")
 
     if (target_branch := os.environ.get("INPUT_TARGET_BRANCH")) is None:
         if (target_branch := os.environ.get("TARGET_BRANCH")) is None:
             raise Exception("target branch can't be determined from parameters or environment variables")
-    logging.info(target_branch)
+    logging.info(f"target_branch: {target_branch}")
 
     if (repository_name := os.environ.get("INPUT_REPOSITORY_NAME")) is None:
         if (repository_name := os.environ.get("GITHUB_REPOSITORY")) is None:
             raise Exception("repository name can't be determined from parameters or environment variables")
-    logging.info(repository_name)
+    logging.info(f"repository_name: {repository_name}")
 
     if (access_token := os.environ.get("INPUT_ACCESS_TOKEN")) is None:
         raise Exception("access_token parameters must be set")
