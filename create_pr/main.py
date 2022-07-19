@@ -10,22 +10,22 @@ logging.basicConfig(format='ACTION: %(message)s', level=log_level)
 
 
 def main():
-    if (head_branch := os.environ.get("INPUT_HEAD_BRANCH")) is None:
-        if (head_branch := os.environ.get("HEAD_BRANCH")) is None:
+    if not (head_branch := os.environ.get("INPUT_HEAD_BRANCH")):
+        if not (head_branch := os.environ.get("HEAD_BRANCH")):
             raise Exception("head branch can't be determined from parameters or environment variables")
     logging.info(f"head_branch: {head_branch}")
 
-    if (target_branch := os.environ.get("INPUT_TARGET_BRANCH")) is None:
-        if (target_branch := os.environ.get("TARGET_BRANCH")) is None:
+    if not (target_branch := os.environ.get("INPUT_TARGET_BRANCH")):
+        if not (target_branch := os.environ.get("TARGET_BRANCH")):
             raise Exception("target branch can't be determined from parameters or environment variables")
     logging.info(f"target_branch: {target_branch}")
 
-    if (repository_name := os.environ.get("INPUT_REPOSITORY_NAME")) is None:
-        if (repository_name := os.environ.get("GITHUB_REPOSITORY")) is None:
+    if not (repository_name := os.environ.get("INPUT_REPOSITORY_NAME")):
+        if not (repository_name := os.environ.get("GITHUB_REPOSITORY")):
             raise Exception("repository name can't be determined from parameters or environment variables")
     logging.info(f"repository_name: {repository_name}")
 
-    if (access_token := os.environ.get("INPUT_ACCESS_TOKEN")) is None:
+    if not (access_token := os.environ.get("INPUT_ACCESS_TOKEN")):
         raise Exception("access_token parameters must be set")
 
     g = Github(access_token)
