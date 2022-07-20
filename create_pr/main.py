@@ -10,6 +10,7 @@ logging.basicConfig(format='ACTION: %(message)s', level=log_level)
 
 
 def main():
+
     if not (head_branch := os.environ.get("INPUT_HEAD_BRANCH")):
         if not (head_branch := os.environ.get("HEAD_BRANCH")):
             raise Exception("head branch can't be determined from parameters or environment variables")
@@ -34,6 +35,13 @@ def main():
         draft = True
 
     g = Github(access_token)
+    pr = getPullRequest(g)
+    print(pr.draft)
+    print(pr.head)
+    if pr.draft and re.search('^merge_', pr.head):
+        print("Shouldn't run jobs")
+    else:
+        print("Should run jobs")
 
     repo = g.get_repo(repository_name)
     if repo.get_pulls(base=target_branch, head=head_branch).totalCount > 0:
