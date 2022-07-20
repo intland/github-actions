@@ -29,10 +29,10 @@ def main():
     if not (access_token := os.environ.get("INPUT_ACCESS_TOKEN")):
         raise Exception("access_token parameters must be set")
 
-    if not (draft := os.environ.get("INPUT_DRAFT")):
-        draft = False
-    elif draft.lower() in ["true", "yes"]:
+    if (draft := os.environ.get("INPUT_DRAFT")).lower() in ["true", "yes"]:
         draft = True
+    else:
+        draft = False
 
     g = Github(access_token)
     pr = getPullRequest(g)
