@@ -40,6 +40,10 @@ def main():
     g = Github(access_token)
     jenkins = Jenkins(url, auth=auth)
 
+    pr = getPullRequest(g)
+    if pr.draft and re.search('^merge_', pr.head.ref):
+        return
+
     retry(connectToJenkins, 60, 10)(jenkins)
 
     logging.info('Start a build.')
