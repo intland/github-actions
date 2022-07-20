@@ -35,13 +35,6 @@ def main():
         draft = False
 
     g = Github(access_token)
-    pr = getPullRequest(g)
-    print(pr.draft)
-    print(pr.head)
-    if pr.draft and re.search('^merge_', pr.head):
-        print("Shouldn't run jobs")
-    else:
-        print("Should run jobs")
 
     repo = g.get_repo(repository_name)
     if repo.get_pulls(base=target_branch, head=head_branch).totalCount > 0:
