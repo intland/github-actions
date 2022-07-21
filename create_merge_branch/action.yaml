@@ -1,7 +1,7 @@
 name: "CreateMergeBranch"
 description: "Create a merge branch from head and base"
 author: "Miklos Gergely"
-input:
+inputs:
   head_branch:
     description: "Branch with your changes"
     required: true
