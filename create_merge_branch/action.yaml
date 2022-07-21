@@ -12,6 +12,8 @@ runs:
   using: "composite"
   steps:
     - run: |
+        echo head_branch: $INPUT_HEAD_BRANCH
+        echo target_branch: $INPUT_TARGET_BRANCH
         export MERGE_BRANCH="merge_${INPUT_HEAD_BRANCH}_into_${INPUT_TARGET_BRANCH}"
         echo MERGE_BRANCH=$MERGE_BRANCH >> $GITHUB_ENV
         git config --local user.name "${GITHUB_ACTOR}"
