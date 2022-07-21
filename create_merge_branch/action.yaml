@@ -33,3 +33,6 @@ runs:
         git push --force --set-upstream origin "$MERGE_BRANCH"
         git status
       shell: bash
+      env:
+        INPUT_HEAD_BRANCH: ${{ inputs.head_branch }}
+        INPUT_TARGET_BRANCH: ${{ inputs.target_branch }}
