@@ -1,0 +1,38 @@
+name: "CreateMergeBranch"
+description: "Create a merge branch from head and base"
+author: "Miklos Gergely"
+inputs:
+  head_branch:
+    description: "Branch with your changes"
+    required: true
+  target_branch:
+    description: "Branch to send your changes to"
+    required: true
+runs:
+  using: "composite"
+  steps:
+    - run: |
+        echo head_branch: $INPUT_HEAD_BRANCH
+        echo target_branch: $INPUT_TARGET_BRANCH
+        export MERGE_BRANCH="merge_${INPUT_HEAD_BRANCH}_into_${INPUT_TARGET_BRANCH}"
+        echo MERGE_BRANCH=$MERGE_BRANCH >> $GITHUB_ENV
+        git config --local user.name "${GITHUB_ACTOR}"
+        git config --local user.email "${GITHUB_ACTOR}@users.noreply.github.com"
+        git rev-parse --verify "$MERGE_BRANCH" && \
+        git branch -D "$MERGE_BRANCH"
+        git checkout "$INPUT_HEAD_BRANCH"
+        git pull
+        git status
+        git checkout "$INPUT_TARGET_BRANCH"
+        git pull
+        git checkout -b "$MERGE_BRANCH"
+        git merge "$INPUT_HEAD_BRANCH" --no-edit || \
+        (git add . && \
+        git commit -m "Merge branch ${INPUT_HEAD_BRANCH} into ${INPUT_TARGET_BRANCH}" && \
+        echo "CONFLICT=true" >> $GITHUB_ENV)
+        git push --force --set-upstream origin "$MERGE_BRANCH"
+        git status
+      shell: bash
+      env:
+        INPUT_HEAD_BRANCH: ${{ inputs.head_branch }}
+        INPUT_TARGET_BRANCH: ${{ inputs.target_branch }}
