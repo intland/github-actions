@@ -30,3 +30,4 @@ runs:
         echo "CONFLICT=true" >> $GITHUB_ENV)
         git push --force --set-upstream origin "$MERGE_BRANCH"
         git status
+      shell: bash
