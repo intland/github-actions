@@ -37,12 +37,11 @@ def main():
     g = Github(access_token)
 
     repo = g.get_repo(repository_name)
-    prs = repo.get_pulls(state='open', base=target_branch, head=head_branch)
-    if prs.totalCount > 0:
-        for pr in prs:
-            logging.info(pr.url)
-        logging.info(f"PR already exists for Merge {head_branch} into {target_branch}")
-        return
+    prs = repo.get_pulls(state='open')
+    for pr in prs:
+        if pr.head.ref == head_branch and pr.base.ref == target_branch:
+            logging.info(f"PR already exists for Merge {head_branch} into {target_branch} at {pr.url}")
+            return
     pr = repo.create_pull(title=f"Merge {head_branch} into {target_branch}", body="", base=target_branch, head=head_branch, draft=draft)
     logging.info(pr.url)
 
