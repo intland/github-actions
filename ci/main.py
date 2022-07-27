@@ -42,10 +42,9 @@ def main():
     if pr.draft and re.search('^merge_', pr.head.ref):
         return
 
+    parameters = convertToJson(parameters)
     if 'NOTIFICATION_EMAIL' in parameters.keys():
         parameters['NOTIFICATION_EMAIL'] = ','.join(getPRAuthorEmails(pr))
-
-    parameters = convertToJson(parameters)
 
     retry(connectToJenkins, 60, 10)(jenkins)
 
