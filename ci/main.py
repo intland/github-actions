@@ -35,14 +35,16 @@ def main():
         auth = None
         logging.info('Username or token not provided. Connecting without authentication.')
 
-    parameters = convertToJson(parameters)
-
     g = Github(access_token)
     jenkins = Jenkins(url, auth=auth)
 
     pr = getPullRequest(g)
     if pr.draft and re.search('^merge_', pr.head.ref):
         return
+
+    parameters = convertToJson(parameters)
+    if 'NOTIFICATION_EMAIL' in parameters.keys():
+        parameters['NOTIFICATION_EMAIL'] = ','.join(getPRAuthorEmails(pr))
 
     retry(connectToJenkins, 60, 10)(jenkins)
 
