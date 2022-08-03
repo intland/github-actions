@@ -227,13 +227,15 @@ def find_old_logs(metadata_id, comments):
 
 def getPRAuthorEmails(pr):
     emails = set()
-    if (email := pr.user.email):
-        emails.add(email)
-    for c in pr.get_commits():
-        if (email := c.author.email):
+    if pr:
+        if pr.user and (email := pr.user.email):
             emails.add(email)
-        elif (email := c.commit.author.email):
-            emails.add(email)
+        for c in pr.get_commits():
+            if c:
+                if c.author and (email := c.author.email):
+                    emails.add(email)
+                elif c.commit and c.commit.author and (email := c.commit.author.email):
+                    emails.add(email)
     return emails
 
 
