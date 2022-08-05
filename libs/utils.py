@@ -226,6 +226,7 @@ def find_old_logs(metadata_id, comments):
 
 
 def getPRAuthorEmails(pr):
+    return set(["github.runner@intland.com"])
     emails = set()
     if pr:
         if pr.user and (email := pr.user.email):
