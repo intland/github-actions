@@ -1,4 +1,3 @@
-import imp
 import json
 import logging
 import os
@@ -225,19 +224,18 @@ def find_old_logs(metadata_id, comments):
     return old_logs
 
 
-def getPRAuthorEmails(pr):
+def getPRAuthorEmails(url, auth):
+    resp = requests.get(f"{url}/commits", headers={"Authorization": f"token {auth}"})
+    if resp.ok:
+        emails = set()
+        for commit in json.loads(resp.content):
+            if commit.get('author') and (email := commit['author'].get('email')):
+                emails.add(email)
+            if commit.get('commit') and commit['commit'].get('author') and (email := commit['commit']['author'].get('email')):
+                emails.add(email)
+        if emails:
+            return emails
     return set(["github.runner@intland.com"])
-    emails = set()
-    if pr:
-        if pr.user and (email := pr.user.email):
-            emails.add(email)
-        for c in pr.get_commits():
-            if c:
-                if c.author and (email := c.author.email):
-                    emails.add(email)
-                elif c.commit and c.commit.author and (email := c.commit.author.email):
-                    emails.add(email)
-    return emails
 
 
 def runs(command, verbose=0):

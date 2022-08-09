@@ -44,7 +44,7 @@ def main():
 
     parameters = convertToJson(parameters)
     if 'NOTIFICATION_EMAIL' in parameters.keys():
-        parameters['NOTIFICATION_EMAIL'] = ','.join(getPRAuthorEmails(pr))
+        parameters['NOTIFICATION_EMAIL'] = ','.join(getPRAuthorEmails(pr.url, access_token))
 
     retry(connectToJenkins, 60, 10)(jenkins)
 
