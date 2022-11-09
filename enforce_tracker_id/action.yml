@@ -1,0 +1,10 @@
+name: "EnforceTrackerId"
+description: "Enforce Tracker Id in PR's title"
+author: "Miklos Gergely"
+inputs:
+  access_token:
+    description: "GitHub token"
+    required: true
+runs:
+  using: "docker"
+  image: "../enforce_tracker_id.Dockerfile"
