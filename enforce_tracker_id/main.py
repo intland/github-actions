@@ -18,7 +18,7 @@ def main():
     g = Github(access_token)
     gql = GithubGraphQl(access_token)
     pr = getPullRequest(g)
-    if not pr.draft and not re.search('#[0-9]+', pr.title) and not re.search('Merge merge_.*into.* into .*', pr.title):
+    if not pr.draft and not re.search('#[0-9]+', pr.title) and not re.search('^merge.*into.*', pr.title.lower()):
         logging.info("Converting to draft")
         pr.create_issue_comment('>_Please define a tracker ID in your PR\'s title_')
         logging.info(gql.convert_to_draft(gql.get_pullRequest_id(*pr.base.repo.full_name.split("/"), pr.number)))
