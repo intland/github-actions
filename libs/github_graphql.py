@@ -39,4 +39,6 @@ class GithubGraphQl:
         resp = self.run_query(query)
         if resp["data"]["convertPullRequestToDraft"]:
             return resp
-        raise Exception(resp["errors"])
+        if (errors := resp.get("errors")):
+            raise Exception(errors)
+        raise Exception("Unknown Exception")
