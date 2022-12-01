@@ -26,6 +26,12 @@ def main():
     for team in teams:
         pr.add_to_labels(team)
 
+    try:
+        priority = get_ticket_priority(pr, (codebeamer_user, codebeamer_password))
+        pr.add_to_labels(priority)
+    except Exception as e:
+        logging.error("Couldn't put Ticket Priority Label:", e)
+
 
 if __name__ == "__main__":
     main()

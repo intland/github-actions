@@ -164,6 +164,19 @@ def getTeams(pr, cbAuth):
     return set(teams)
 
 
+def get_ticket_priority(pr, cbAuth):
+    id = getIds(pr.title)[0]
+    itemGetUrl = f"https://codebeamer.com/cb/api/v3/items/{id}"
+    try:
+        logging.info(f"Fetching information from: {itemGetUrl}")
+        response = requests.get(url=itemGetUrl, auth=cbAuth)
+        if response.status_code == 200:
+            logging.info(f"Ticket is found")
+            return response.json()["priority"]["name"]
+    except Exception as e:
+        logging.warning(f"Ticket priority information cannot be fetched from: {itemGetUrl}", e)
+
+
 def is_build_for_this_pr(build):
     for param in build.get_parameters():
         if param.name == 'CODEBEAMER':
