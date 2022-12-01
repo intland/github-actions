@@ -270,6 +270,8 @@ def runs(command, verbose=0):
 def replace_labels(pr, prefix, value):
     for label in pr.get_labels():
         if re.match(f"{prefix}:.*", label.name):
+            if label.name == f"{prefix}:{value}":
+                return
             pr.remove_from_labels(label)
     pr.add_to_labels(f"{prefix}:{value}")
 
