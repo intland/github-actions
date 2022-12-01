@@ -1,5 +1,6 @@
 import logging
 import os
+import re
 
 from github import Github
 
@@ -21,16 +22,21 @@ def main():
     g = Github(access_token)
 
     pr = getPullRequest(g)
-    teams = getTeams(pr, (codebeamer_user, codebeamer_password))
 
+    # Team Labels
+    teams = getTeams(pr, (codebeamer_user, codebeamer_password))
     for team in teams:
         pr.add_to_labels(team)
 
-    try:
-        priority = get_ticket_priority(pr, (codebeamer_user, codebeamer_password))
-        pr.add_to_labels(priority)
-    except Exception as e:
-        logging.error("Couldn't put Ticket Priority Label:", e)
+    # Priority Label
+    create_priority_labels(pr.as_issue().repository)
+    priority = get_ticket_priority(pr, (codebeamer_user, codebeamer_password))
+    replace_labels(pr, "priority", priority)
+
+    # Branch Label
+    if not (branch := os.environ.get("TARGET_BRANCH")):
+        raise Exception("Can't find target branch")
+    replace_labels(pr, "target", branch)
 
 
 if __name__ == "__main__":

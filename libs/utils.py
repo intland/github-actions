@@ -265,3 +265,26 @@ def runs(command, verbose=0):
     if verbose >= 2:
         print(f"END `{command}`\n")
     return resp
+
+
+def replace_labels(pr, prefix, value):
+    for label in pr.get_labels():
+        if re.match(f"{prefix}:.*", label.name):
+            pr.remove_from_labels(label)
+    pr.add_to_labels(f"{prefix}:{value}")
+
+
+def create_priority_labels(repo):
+    defaults = {
+        "priority:Lowest": "858585",
+        "priority:Low": "0092BA",
+        "priority:Normal": "00A95A",
+        "priority:High": "FFAC38",
+        "priority:Highest": "B50F0B"
+    }
+    for label in repo.get_labels():
+        if label.name in defaults.keys():
+            if label.color != (color := defaults.pop(label.name)):
+                label.edit(label.name, color)
+    for label in defaults:
+        repo.create_label(label, defaults[label])
