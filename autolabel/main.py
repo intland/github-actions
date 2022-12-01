@@ -33,7 +33,7 @@ def main():
     replace_labels(pr, "priority", priority)
 
     # Branch Label
-    if not (branch := os.environ.get("TARGET_BRANCH")):
+    if not (branch := os.environ.get("GITHUB_BASE_REF")):
         raise Exception("Can't find target branch")
     replace_labels(pr, "target", branch)
 
