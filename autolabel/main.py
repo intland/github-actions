@@ -1,6 +1,5 @@
 import logging
 import os
-import re
 
 from github import Github
 
@@ -29,7 +28,7 @@ def main():
         pr.add_to_labels(team)
 
     # Priority Label
-    create_priority_labels(pr.as_issue().repository)
+    create_priority_labels(g.get_repo(os.environ.get("GITHUB_REPOSITORY")))
     priority = get_ticket_priority(pr, (codebeamer_user, codebeamer_password))
     replace_labels(pr, "priority", priority)
 
