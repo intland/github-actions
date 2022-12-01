@@ -165,16 +165,24 @@ def getTeams(pr, cbAuth):
 
 
 def get_ticket_priority(pr, cbAuth):
-    id = getIds(pr.title)[0]
-    itemGetUrl = f"https://codebeamer.com/cb/api/v3/items/{id}"
-    try:
-        logging.info(f"Fetching information from: {itemGetUrl}")
-        response = requests.get(url=itemGetUrl, auth=cbAuth)
-        if response.status_code == 200:
-            logging.info(f"Ticket is found")
-            return response.json()["priority"]["name"]
-    except Exception as e:
-        logging.warning(f"Ticket priority information cannot be fetched from: {itemGetUrl}", e)
+    ids = []
+    ids.extend(getIds(pr.title))
+    ids.extend(getIds(pr.body))
+    for c in pr.get_commits():
+        ids.extend(getIds(c.commit.message))
+    priority = None
+    for id in ids:
+        itemGetUrl = f"https://codebeamer.com/cb/api/v3/items/{id}"
+        try:
+            logging.info(f"Fetching information from: {itemGetUrl}")
+            response = requests.get(url=itemGetUrl, auth=cbAuth)
+            if response.status_code == 200:
+                logging.info(f"Ticket #{id} is found")
+                if not priority or priority.get("id") > response.json()['priority']['id']:
+                    priority = response.json()['priority']
+        except Exception as e:
+            logging.warning(f"Ticket priority information cannot be fetched from: {itemGetUrl}", e)
+    return priority["name"]
 
 
 def is_build_for_this_pr(build):
