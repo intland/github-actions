@@ -197,7 +197,7 @@ def is_build_for_this_pr(build):
 
 def getIds(text):
     if text:
-        return list(map(lambda p: p[1:], filter(lambda p: bool(re.match(r'^#[\d]+$', p)), text.split())))
+        return re.findall(r'#([\d]+)', text)
     else:
         return []
 
