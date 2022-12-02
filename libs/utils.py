@@ -182,7 +182,9 @@ def get_ticket_priority(pr, cbAuth):
                     priority = response.json()['priority']
         except Exception as e:
             logging.warning(f"Ticket priority information cannot be fetched from: {itemGetUrl}", e)
-    return priority["name"]
+    if priority:
+        return priority.get("name")
+    return None
 
 
 def is_build_for_this_pr(build):
@@ -281,6 +283,8 @@ def replace_labels(pr, prefix, value):
             if label.name == f"{prefix}:{value}":
                 return
             pr.remove_from_labels(label)
+    if not value:
+        return
     pr.add_to_labels(f"{prefix}:{value}")
 
 
