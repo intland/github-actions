@@ -24,6 +24,8 @@ def main():
     if re.search('^merge_', pr.head.ref):
         return
 
+    logging.info(f"URL: {url}")
+
     issue_comment(g, "sonar-report", getSonarStatusMessage(url, api_token, commit_sha, timeout, interval), keepLogsMetadata(commit_sha))
 
 def getSonarStatusMessage(url, api_token, commit_sha, timeout, interval):
@@ -43,6 +45,8 @@ def getProjectStatus(url, api_token, projectKey, branch):
         raise Exception(f'Status cannot be checked for {projectKey}')
 
 def getSonarProjects(url, api_token, timeout, interval):
+    logging.info(f"URL - getSonarProjects: {url}")
+    
     projects = []
     page = 1
     while(True):
