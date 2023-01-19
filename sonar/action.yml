@@ -14,7 +14,6 @@ inputs:
   commit_sha:
     description: "Last commit SHA, it is used for branch in Sonar"
     required: true
-    default: "True"
   timeout:
     description: "Timeout in seconds for fetching sonar check"
     required: false
