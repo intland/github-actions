@@ -7,6 +7,7 @@ import requests
 
 log_level = os.environ.get('INPUT_LOG_LEVEL', 'INFO')
 logging.basicConfig(format='SONAR_ACTION: %(message)s', level=log_level)
+headers = {'User-Agent':'groovy-2.4.4', 'Accept':'application/json'}
 
 def main():
     # Required
@@ -23,7 +24,7 @@ def main():
     if re.search('^merge_', pr.head.ref):
         return
 
-    issue_comment(g, metadata_id, getSonarStatusMessage(url, api_token, commit_sha), keepLogsMetadata(build))
+    issue_comment(g, "sonar-report", getSonarStatusMessage(url, api_token, commit_sha), keepLogsMetadata(commit_sha))
 
 def getSonarStatusMessage(url, api_token, commit_sha): {
     message = ''
@@ -31,16 +32,16 @@ def getSonarStatusMessage(url, api_token, commit_sha): {
         status = getProjectStatus(url, api_token, projectKey, commit_sha)
         if status == 'ERROR'
             dashboardUrl = f'{url}/dashboard?branch={commit_sha}&id={projectKey}'
-            message += f'*{projectKey}*'
+            message += f'*{projectKey}*\n'
             message += f'QUALITY GATE STATUS: FAILED - View details on {dashboardUrl}\n'
 }
 
 def getProjectStatus(url, api_token, projectKey, branch):
-    response = requests.get(f'{url}/api/qualitygates/project_status', params={'projectKey' : projectKey, 'branch' : branch}, auth=(api_token,''), headers={'User-Agent':'groovy-2.4.4', 'Accept':'application/json'})
+    response = requests.get(f'{url}/api/qualitygates/project_status', params={'projectKey' : projectKey, 'branch' : branch}, auth=(api_token,''), headers=headers)
     if response.status_code == 200:
         return response['projectStatus']['status']
     else:
-        raise Exception(f'Status cannot be checked for ${projectKey}')
+        raise Exception(f'Status cannot be checked for {projectKey}')
 
 def getSonarProjects(url, api_token, timeout, interval):
     projects = []
@@ -53,7 +54,7 @@ def getSonarProjects(url, api_token, timeout, interval):
                 break
 
             for c in components:
-                projects.extend(c["key"])
+                projects.append(c["key"])
         else:
             break
 
@@ -62,7 +63,7 @@ def getSonarProjects(url, api_token, timeout, interval):
     return projects
 
 def search(url, page, api_token):
-    requests.get(f'{url}/api/projects/search', params={'p' : page}, auth=(api_token,''), headers={'User-Agent':'groovy-2.4.4', 'Accept':'application/json'})
+    requests.get(f'{url}/api/projects/search', params={'p' : page}, auth=(api_token,''), headers=headers)
 
 def keepLogsMetadata(commit_sha):
     return json.dumps([{"build": {"commit_sha": commit_sha}, "enabled": True}])
