@@ -24,9 +24,9 @@ def main():
     if re.search('^merge_', pr.head.ref):
         return
 
-    issue_comment(g, "sonar-report", getSonarStatusMessage(url, api_token, commit_sha), keepLogsMetadata(commit_sha))
+    issue_comment(g, "sonar-report", getSonarStatusMessage(url, api_token, commit_sha, timeout, interval), keepLogsMetadata(commit_sha))
 
-def getSonarStatusMessage(url, api_token, commit_sha):
+def getSonarStatusMessage(url, api_token, commit_sha, timeout, interval):
     message = ''
     for projectKey in getSonarProjects(url, api_token, timeout, interval):
         status = getProjectStatus(url, api_token, projectKey, commit_sha)
