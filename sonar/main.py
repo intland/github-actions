@@ -26,15 +26,14 @@ def main():
 
     issue_comment(g, "sonar-report", getSonarStatusMessage(url, api_token, commit_sha), keepLogsMetadata(commit_sha))
 
-def getSonarStatusMessage(url, api_token, commit_sha): {
+def getSonarStatusMessage(url, api_token, commit_sha):
     message = ''
     for projectKey : getSonarProjects(url, api_token, timeout, interval):
         status = getProjectStatus(url, api_token, projectKey, commit_sha)
-        if status == 'ERROR'
+        if status == 'ERROR':
             dashboardUrl = f'{url}/dashboard?branch={commit_sha}&id={projectKey}'
             message += f'*{projectKey}*\n'
             message += f'QUALITY GATE STATUS: FAILED - View details on {dashboardUrl}\n'
-}
 
 def getProjectStatus(url, api_token, projectKey, branch):
     response = requests.get(f'{url}/api/qualitygates/project_status', params={'projectKey' : projectKey, 'branch' : branch}, auth=(api_token,''), headers=headers)
