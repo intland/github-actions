@@ -28,7 +28,7 @@ def main():
 
 def getSonarStatusMessage(url, api_token, commit_sha):
     message = ''
-    for projectKey : getSonarProjects(url, api_token, timeout, interval):
+    for projectKey in getSonarProjects(url, api_token, timeout, interval):
         status = getProjectStatus(url, api_token, projectKey, commit_sha)
         if status == 'ERROR':
             dashboardUrl = f'{url}/dashboard?branch={commit_sha}&id={projectKey}'
