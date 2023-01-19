@@ -1,0 +1,28 @@
+name: "Jenkins-Action"
+description: "Report Sonar report"
+author: "Sandor Zelei"
+inputs:
+  url:
+    description: "Sonar URL including http/https protocol"
+    required: true
+  api_token:
+    description: "Sonar API token"
+    required: true
+  access_token:
+    description: "GitHub token"
+    required: true
+  commit_sha:
+    description: "Last commit SHA, it is used for branch in Sonar"
+    required: true
+    default: "True"
+  timeout:
+    description: "Timeout in seconds for fetching sonar check"
+    required: false
+    default: "18000"
+  interval:
+    description: "How frequently in seconds to query Sonar api"
+    required: false
+    default: "5"
+runs:
+  using: "docker"
+  image: "../ci.Dockerfile"
