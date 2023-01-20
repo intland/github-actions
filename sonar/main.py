@@ -30,9 +30,9 @@ def main():
     g = Github(access_token)
     message = getSonarStatusMessage(url, original_url, api_token, commit_sha, timeout, interval)
     if message:
-        issue_comment(g, "sonar-report", "**Sonar Quality check result**\n\n" + message, keepLogsMetadata(commit_sha))
+        issue_comment(g, "sonar-report", "###Sonar Quality check result\n\n" + message, keepLogsMetadata(commit_sha))
     else:
-        issue_comment(g, "sonar-report", "**Sonar Quality check result**\n\nQUALITY GATE STATUS: PASSED", keepLogsMetadata(commit_sha))
+        issue_comment(g, "sonar-report", "###Sonar Quality check result\n\nQUALITY GATE STATUS: PASSED", keepLogsMetadata(commit_sha))
 
 def getSonarStatusMessage(url, original_url, api_token, commit_sha, timeout, interval):
     message = ''
