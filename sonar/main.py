@@ -42,6 +42,8 @@ def getSonarStatusMessage(url, api_token, commit_sha, timeout, interval):
             message += f'*{projectKey}*\n'
             message += f'QUALITY GATE STATUS: FAILED - View details on {dashboardUrl}\n'
 
+    return message
+
 def getProjectStatus(url, api_token, projectKey, branch):
     response = requests.get(f'{url}/api/qualitygates/project_status', params={'projectKey' : projectKey, 'branch' : branch}, auth=(api_token,''), headers=headers, verify=False)
     if response.status_code == 200:
