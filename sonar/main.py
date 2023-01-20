@@ -31,13 +31,17 @@ def main():
     if re.search('^merge_', pr.head.ref):
         return
 
-    issue_comment(g, "sonar-report", getSonarStatusMessage(url, api_token, commit_sha, timeout, interval), keepLogsMetadata(commit_sha))
+
+    message = getSonarStatusMessage(url, api_token, commit_sha, timeout, interval)
+    if message:
+        issue_comment(g, "sonar-report", message, keepLogsMetadata(commit_sha))
+    else:
+        issue_comment(g, "sonar-report", "QUALITY GATE STATUS: PASSED", keepLogsMetadata(commit_sha))
 
 def getSonarStatusMessage(url, api_token, commit_sha, timeout, interval):
     message = ''
     for projectKey in getSonarProjects(url, api_token, timeout, interval):
         status = getProjectStatus(url, api_token, projectKey, commit_sha)
-        logging.info('Project status: {status}')
         if status == 'ERROR':
             dashboardUrl = f'{url}/dashboard?branch={commit_sha}&id={projectKey}'
             message += f'*{projectKey}*\n'
@@ -48,7 +52,6 @@ def getSonarStatusMessage(url, api_token, commit_sha, timeout, interval):
 
 def getProjectStatus(url, api_token, projectKey, branch):
     response = requests.get(f'{url}/api/qualitygates/project_status', params={'projectKey' : projectKey, 'branch' : branch}, auth=(api_token,''), headers=headers, verify=False)
-    logging.info(f'Project status response: {response}')
     if response.status_code == 200:
         return response['projectStatus']['status']
     elif response.status_code == 404:
@@ -76,9 +79,7 @@ def getSonarProjects(url, api_token, timeout, interval):
     return projects
 
 def search(url, page, api_token):
-    searchResponse = requests.get(f'{url}/api/projects/search', params={'p' : page}, auth=(api_token,''), headers=headers, verify=False)
-    logging.info(f'Search response: {searchResponse}')
-    return searchResponse
+    return requests.get(f'{url}/api/projects/search', params={'p' : page}, auth=(api_token,''), headers=headers, verify=False)
 
 def keepLogsMetadata(commit_sha):
     return json.dumps([{"build": {"commit_sha": commit_sha}, "enabled": True}])
