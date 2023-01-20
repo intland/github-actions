@@ -53,7 +53,7 @@ def getSonarStatusMessage(url, api_token, commit_sha, timeout, interval):
 def getProjectStatus(url, api_token, projectKey, branch):
     response = requests.get(f'{url}/api/qualitygates/project_status', params={'projectKey' : projectKey, 'branch' : branch}, auth=(api_token,''), headers=headers, verify=False)
     if response.status_code == 200:
-        return response['projectStatus']['status']
+        return response.json()['projectStatus']['status']
     elif response.status_code == 404:
         return 'N/A'
     else:
