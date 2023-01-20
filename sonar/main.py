@@ -28,15 +28,11 @@ def main():
 
     # Preset
     g = Github(access_token)
-    pr = getPullRequest(g)
-    if re.search('^merge_', pr.head.ref):
-        return
-
     message = getSonarStatusMessage(url, original_url, api_token, commit_sha, timeout, interval)
     if message:
-        issue_comment(g, "sonar-report", message, keepLogsMetadata(commit_sha))
+        issue_comment(g, "sonar-report", "Sonar Quality check result:\n" + message, keepLogsMetadata(commit_sha))
     else:
-        issue_comment(g, "sonar-report", "QUALITY GATE STATUS: PASSED", keepLogsMetadata(commit_sha))
+        issue_comment(g, "sonar-report", "Sonar Quality check result:\nQUALITY GATE STATUS: PASSED", keepLogsMetadata(commit_sha))
 
 def getSonarStatusMessage(url, original_url, api_token, commit_sha, timeout, interval):
     message = ''
