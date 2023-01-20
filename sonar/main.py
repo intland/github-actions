@@ -71,7 +71,7 @@ def getSonarProjects(url, api_token, timeout, interval):
     return projects
 
 def search(url, page, api_token):
-    requests.get(f'{url}/api/projects/search', params={'p' : page}, auth=(api_token,''), headers=headers, verify=False)
+    return requests.get(f'{url}/api/projects/search', params={'p' : page}, auth=(api_token,''), headers=headers, verify=False)
 
 def keepLogsMetadata(commit_sha):
     return json.dumps([{"build": {"commit_sha": commit_sha}, "enabled": True}])
