@@ -41,7 +41,7 @@ def getSonarStatusMessage(url, original_url, api_token, commit_sha, timeout, int
         if status == 'ERROR':
             dashboardUrl = f'{original_url}/dashboard?branch={commit_sha}&id={projectKey}'
             message += f'**{projectKey}**\n'
-            message += f'QUALITY GATE STATUS: FAILED - View details on [dashboard]({dashboardUrl})\n'
+            message += f'QUALITY GATE STATUS: FAILED - View details on [dashboard]({dashboardUrl})\n\n'
 
     logging.info(f'Message: {message}')
     return message
