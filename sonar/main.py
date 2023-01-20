@@ -18,7 +18,8 @@ DNS = {
 
 def main():
     # Required
-    url = DNS[os.environ["INPUT_URL"]]
+    original_url = os.environ["INPUT_URL"]
+    url = DNS[original_url]
     api_token = os.environ.get("INPUT_API_TOKEN")
     access_token = os.environ.get("INPUT_ACCESS_TOKEN")
     commit_sha = os.environ.get("INPUT_COMMIT_SHA")
@@ -31,21 +32,20 @@ def main():
     if re.search('^merge_', pr.head.ref):
         return
 
-
-    message = getSonarStatusMessage(url, api_token, commit_sha, timeout, interval)
+    message = getSonarStatusMessage(url, original_url, api_token, commit_sha, timeout, interval)
     if message:
         issue_comment(g, "sonar-report", message, keepLogsMetadata(commit_sha))
     else:
         issue_comment(g, "sonar-report", "QUALITY GATE STATUS: PASSED", keepLogsMetadata(commit_sha))
 
-def getSonarStatusMessage(url, api_token, commit_sha, timeout, interval):
+def getSonarStatusMessage(url, original_url, api_token, commit_sha, timeout, interval):
     message = ''
     for projectKey in getSonarProjects(url, api_token, timeout, interval):
         status = getProjectStatus(url, api_token, projectKey, commit_sha)
         if status == 'ERROR':
-            dashboardUrl = f'{url}/dashboard?branch={commit_sha}&id={projectKey}'
-            message += f'*{projectKey}*\n'
-            message += f'QUALITY GATE STATUS: FAILED - View details on {dashboardUrl}\n'
+            dashboardUrl = f'{original_url}/dashboard?branch={commit_sha}&id={projectKey}'
+            message += f'**{projectKey}**\n'
+            message += f'QUALITY GATE STATUS: FAILED - View details on [dashboard]({dashboardUrl})\n'
 
     logging.info(f'Message: {message}')
     return message
