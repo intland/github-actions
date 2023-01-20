@@ -4,14 +4,21 @@ import os
 from github import Github
 from libs.utils import *
 import requests
+from urllib3.exceptions import InsecureRequestWarning
 
+requests.packages.urllib3.disable_warnings(category=InsecureRequestWarning)
 log_level = os.environ.get('INPUT_LOG_LEVEL', 'INFO')
 logging.basicConfig(format='SONAR_ACTION: %(message)s', level=log_level)
 headers = {'User-Agent':'groovy-2.4.4', 'Accept':'application/json'}
 
+# Some DevOps issue, using internal IP
+DNS = {
+  "https://sq.intland.de": "https://172.30.0.14"
+}
+
 def main():
     # Required
-    url = os.environ["INPUT_URL"]
+    url = DNS[os.environ["INPUT_URL"]]
     api_token = os.environ.get("INPUT_API_TOKEN")
     access_token = os.environ.get("INPUT_ACCESS_TOKEN")
     commit_sha = os.environ.get("INPUT_COMMIT_SHA")
@@ -23,8 +30,6 @@ def main():
     pr = getPullRequest(g)
     if re.search('^merge_', pr.head.ref):
         return
-
-    logging.info(f"URL: {url}")
 
     issue_comment(g, "sonar-report", getSonarStatusMessage(url, api_token, commit_sha, timeout, interval), keepLogsMetadata(commit_sha))
 
@@ -38,15 +43,15 @@ def getSonarStatusMessage(url, api_token, commit_sha, timeout, interval):
             message += f'QUALITY GATE STATUS: FAILED - View details on {dashboardUrl}\n'
 
 def getProjectStatus(url, api_token, projectKey, branch):
-    response = requests.get(f'{url}/api/qualitygates/project_status', params={'projectKey' : projectKey, 'branch' : branch}, auth=(api_token,''), headers=headers)
+    response = requests.get(f'{url}/api/qualitygates/project_status', params={'projectKey' : projectKey, 'branch' : branch}, auth=(api_token,''), headers=headers, verify=False)
     if response.status_code == 200:
         return response['projectStatus']['status']
+    elif response.status_code == 404:
+        return 'N/A'
     else:
         raise Exception(f'Status cannot be checked for {projectKey}')
 
 def getSonarProjects(url, api_token, timeout, interval):
-    logging.info(f"URL - getSonarProjects: {url}")
-    
     projects = []
     page = 1
     while(True):
@@ -66,7 +71,7 @@ def getSonarProjects(url, api_token, timeout, interval):
     return projects
 
 def search(url, page, api_token):
-    requests.get(f'{url}/api/projects/search', params={'p' : page}, auth=(api_token,''), headers=headers)
+    requests.get(f'{url}/api/projects/search', params={'p' : page}, auth=(api_token,''), headers=headers, verify=False)
 
 def keepLogsMetadata(commit_sha):
     return json.dumps([{"build": {"commit_sha": commit_sha}, "enabled": True}])
