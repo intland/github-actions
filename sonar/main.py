@@ -37,15 +37,18 @@ def getSonarStatusMessage(url, api_token, commit_sha, timeout, interval):
     message = ''
     for projectKey in getSonarProjects(url, api_token, timeout, interval):
         status = getProjectStatus(url, api_token, projectKey, commit_sha)
+        logging.info('Project status: {status}')
         if status == 'ERROR':
             dashboardUrl = f'{url}/dashboard?branch={commit_sha}&id={projectKey}'
             message += f'*{projectKey}*\n'
             message += f'QUALITY GATE STATUS: FAILED - View details on {dashboardUrl}\n'
 
+    logging.info('Message: {message}')
     return message
 
 def getProjectStatus(url, api_token, projectKey, branch):
     response = requests.get(f'{url}/api/qualitygates/project_status', params={'projectKey' : projectKey, 'branch' : branch}, auth=(api_token,''), headers=headers, verify=False)
+    logging.info('Project status response: {response}')
     if response.status_code == 200:
         return response['projectStatus']['status']
     elif response.status_code == 404:
@@ -73,7 +76,9 @@ def getSonarProjects(url, api_token, timeout, interval):
     return projects
 
 def search(url, page, api_token):
-    return requests.get(f'{url}/api/projects/search', params={'p' : page}, auth=(api_token,''), headers=headers, verify=False)
+    searchResponse = requests.get(f'{url}/api/projects/search', params={'p' : page}, auth=(api_token,''), headers=headers, verify=False)
+    logging.info('Search response: {searchResponse}')
+    return searchResponse
 
 def keepLogsMetadata(commit_sha):
     return json.dumps([{"build": {"commit_sha": commit_sha}, "enabled": True}])
