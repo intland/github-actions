@@ -67,6 +67,53 @@ def issue_comment(githubApi, metadata_id, content, metadata={}):
     logging.info("New comment is created")
     pr.create_issue_comment(content)
 
+def delete_review_comments(github_api, user_name):
+    pr = getPullRequest(github_api)
+    comments = pr.get_review_comments()
+    logging.info(f"Deleting review comments for user:  {user_name}")
+    for comment in comments:
+        if comment.user.login == user_name:
+            comment.delete()
+
+def create_review_comment(
+    github_api,
+    auth,
+    commit_sha,
+    content,
+    path,
+    line,
+    start_line=None,
+    api_version='2022-11-28'
+):
+    pr = getPullRequest(github_api)
+    headers = {
+        "Accept": "application/vnd.github+json",
+        "Authorization": f"Bearer {auth}",
+        "X-GitHub-Api-Version": api_version
+    }
+    payload = {
+        'body': content,
+        'commit_id': commit_sha,
+        'path': path,
+        'line': line,
+        'side': 'RIGHT'
+    }
+    if start_line:
+        payload['start_line'] = start_line
+        payload['start_side'] = 'RIGHT'
+
+    try:
+        r = requests.post(
+            url=f"{pr.url}/comments",
+            headers=headers,
+            data=json.dumps(payload)
+        )
+        r.raise_for_status()
+    except Exception as e:
+        if e.response.status_code == 422:
+            logging.info(f'Error code: {e.response.status_code} is expected as of now.')
+        else:
+            raise Exception(f"Post request returned {e.response.status_code}. Message: {e.response.text}")
 
 def keep_logs(build, auth, enabled=True):
     if build.api_json()['keepLog'] == enabled:
@@ -130,6 +177,11 @@ def getAllComments(pullRequest):
     for comment in pullRequest.as_issue().get_comments():
         commentsList.append(comment)
     return commentsList
+
+
+def get_pull_request_files(github_api):
+    pr = getPullRequest(github_api)
+    return pr.get_files()
 
 
 def getOrganization(githubApi):
