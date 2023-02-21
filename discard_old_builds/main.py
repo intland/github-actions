@@ -32,65 +32,20 @@ def main():
         auth = None
         logging.info('Username or token not provided. Connecting without authentication.')
 
-    jenkins = Jenkins(url, auth=auth)
+    jenkins = JenkinsWrapper(url, auth=auth)
     github = Github(access_token)
 
-    retry(connectToJenkins, 60, 10)(jenkins)
+    retry(jenkins.connect_to_jenkins, 60, 10)
 
     for job_name in job_names.split(','):
         job_name = job_name.strip()
 
         logging.info(f"Removing '{job_name}' from queue")
-        retry(removeFromQueue, queue_query_timeout, queue_query_interval)(jenkins, job_name)
+        retry(jenkins.remove_from_queue, queue_query_timeout, queue_query_interval)(job_name)
 
         logging.info(f"Stopping '{job_name}' build")
-        if retry(stopAndRemove, job_query_timeout, job_query_interval)(jenkins, job_name, auth):
+        if retry(jenkins.stop_and_remove, job_query_timeout, job_query_interval)(job_name):
             issue_comment(github, f"removed-{job_name}", f"_Builds running on this PR stopped and deleted for job: {job_name}_")
-
-
-def connectToJenkins(jenkins):
-    try:
-        logging.info(f"Try to connect to jenkins")
-        jenkins.version
-        logging.info('Successfully connected to Jenkins.')
-    except Exception as e:
-        raise Exception('Could not connect to Jenkins.') from e
-
-
-def stopAndRemove(jenkins, job_name, auth):
-    job = jenkins.get_job(job_name)
-    if not job:
-        logging.info(f"Job is not found by name: {job_name}")
-        return False
-
-    builds = job.iter_builds()
-    if not builds:
-        logging.info("No builds for job")
-        return False
-
-    has_build_stopped = False
-    for build in builds:
-        if is_build_for_this_pr(build):
-            logging.info(f"Build of {job_name} job will be stopped and removed")
-            keep_logs(build, auth, False)
-            build.stop()
-            has_build_stopped = True
-#            build.delete() Do not remove the build, docker container must be stopped
-
-    return has_build_stopped
-
-
-def removeFromQueue(jenkins, job_name):
-    for queue_item in jenkins.queue.api_json()['items']:
-        name = queue_item.get('task').get('name')
-        logging.info(f"Queue item name is {name}")
-        if name == job_name:
-            q_obj = jenkins.queue.get(queue_item['id'])
-            if is_build_for_this_pr(q_obj):
-                logging.info(f"'{name}' will be canceled")
-                q_obj.cancel
-
-    return True
 
 
 if __name__ == "__main__":
