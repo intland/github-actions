@@ -36,7 +36,7 @@ def main():
         logging.info('Username or token not provided. Connecting without authentication.')
 
     g = Github(access_token)
-    jenkins = Jenkins(url, auth=auth)
+    jenkins = JenkinsWrapper(url, auth=auth)
 
     pr = getPullRequest(g)
     if pr.draft and re.search('^merge_', pr.head.ref):
@@ -46,16 +46,16 @@ def main():
     if 'NOTIFICATION_EMAIL' in parameters.keys():
         parameters['NOTIFICATION_EMAIL'] = ','.join(getPRAuthorEmails(pr.url, access_token))
 
-    retry(connectToJenkins, 60, 10)(jenkins)
+    retry(jenkins.connect_to_jenkins, 60, 20)
 
     logging.info('Start a build.')
-    queue_item = retry(jenkins.build_job, 60, 10)(job_name, **parameters)
-    build = retry(waitForBuild, start_timeout, interval)(queue_item)
+    queue_item = retry(jenkins.build_job, 60, 10)(job_name, parameters)
+    build = retry(jenkins.wait_for_build, start_timeout, interval)(queue_item)
     build_url = build.url
     logging.info(f"Build URL: {build_url}")
 
     if access_token:
-        issue_comment(g, metadata_id, f'{display_job_name} - Build started [here]({build_url})', keepLogsMetadata(build))
+        issue_comment(g, metadata_id, f'{display_job_name} - Build started [here]({build_url})', jenkins.keep_logs_metadata(build))
 
     result = retry(wait_for_build, 60, 10)(build, timeout, interval)
 
@@ -75,10 +75,10 @@ def main():
     except Exception as e:
         logging.info("Error fetching build details")
         body += "\nError fetching build details"
-        issue_comment(g, metadata_id, body, keepLogsMetadata(build))
+        issue_comment(g, metadata_id, body, jenkins.keep_logs_metadata(build))
         raise Exception("Error fetching build details")
 
-    issue_comment(g, metadata_id, f"{body}\n\n{buildResultMessage(build.get_test_report())}", keepLogsMetadata(build))
+    issue_comment(g, metadata_id, f"{body}\n\n{buildResultMessage(build.get_test_report())}", jenkins.keep_logs_metadata(build))
 
     if result in ('FAILURE', 'ABORTED'):
         raise Exception(result)
@@ -105,36 +105,12 @@ def buildResultMessage(test_reports):
         return f"\n\n## Test Results:\n**Passed: {p}**\n**Failed: {f}**\n**Skipped: {s}**"
 
 
-def keepLogsMetadata(build):
-    fullName = build.get_job().full_name
-    number = build.api_json()['number']
-    return json.dumps([{"build": {"fullName": fullName, "number": number}, "enabled": True}])
-
-
 def waitForBuildExecution(build):
     duration = build.api_json()["duration"]
     if not duration:
         raise Exception(f'Build has not finished yet. Waiting few seconds.')
 
     return duration
-
-
-def waitForBuild(queue_item):
-    build = queue_item.get_build()
-    if not build:
-        raise Exception(f'Build not started yet. Waiting few seconds.')
-
-    logging.info(f'Build has been started.')
-    return build
-
-
-def connectToJenkins(jenkins):
-    try:
-        logging.info(f"Try to connect to jenkins")
-        jenkins.version
-        logging.info('Successfully connected to Jenkins.')
-    except Exception as e:
-        raise Exception('Could not connect to Jenkins.') from e
 
 
 if __name__ == "__main__":

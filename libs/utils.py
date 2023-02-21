@@ -7,6 +7,91 @@ from subprocess import run
 from sys import stderr
 from time import sleep, time
 
+from api4jenkins import Jenkins
+
+
+class JenkinsWrapper:
+    def __init__(self, url, auth):
+        self.url = url
+        self.auth = auth
+        self.jenkins = Jenkins(url, auth=auth)
+
+    def _wait_for_left_item(self, queue_item):
+        if queue_item._class.endswith('$LeftItem'):
+            logging.info('Build is not blocked anymore')
+            return
+        else:
+            logging.info('Waiting for build not to be blocked')
+            raise Exception('Build is currently blocked.')
+
+    def _modify_url(self, object_to_modify):
+        if(object_to_modify.url.split('/')[2] == 'jenkins.rd2.thingworx.io'):
+            object_to_modify.url = object_to_modify.url.replace(
+                'jenkins.rd2.thingworx.io', 'bitbucket-jenkins.rd2.thingworx.io'
+            )
+        return object_to_modify
+
+    def _get_job(self, name):
+        return self._modify_url(self.jenkins.get_job(name))
+
+    def connect_to_jenkins(self):
+        try:
+            logging.info(f"Try to connect to jenkins")
+            self.jenkins.version
+            logging.info('Successfully connected to Jenkins.')
+        except Exception as e:
+            raise Exception('Could not connect to Jenkins.') from e
+
+    def remove_from_queue(self, job_name):
+        for queue_item in self.jenkins.queue.api_json()['items']:
+            name = queue_item.get('task').get('name')
+            logging.info(f"Queue item name is {name}")
+            if name == job_name:
+                q_obj = self.jenkins.queue.get(queue_item['id'])
+                if is_build_for_this_pr(q_obj):
+                    logging.info(f"'{name}' will be canceled")
+                    q_obj.cancel()
+        return True
+
+    def stop_and_remove(self, job_name):
+        job = self._get_job(job_name)
+        if not job:
+            logging.info(f"Job is not found by name: {job_name}")
+            return False
+        
+        builds = job.iter_builds()
+        if not builds:
+            logging.info("No builds for job")
+            return False
+
+        has_build_stopped = False
+        for build in builds:
+            build = self._modify_url(build)
+            if is_build_for_this_pr(build):
+                logging.info(f"Build of {job_name} job will be stopped and removed")
+                keep_logs(build, self.auth, False)
+                build.stop()
+                has_build_stopped = True
+
+        return has_build_stopped
+
+    def build_job(self, job_name, parameters):
+        job = self._get_job(job_name)
+        return job.build(**parameters)
+
+    def wait_for_build(self, queue_item):
+        retry(self._wait_for_left_item, 60, 3)(queue_item)
+        build = queue_item.get_build()
+        build = self._modify_url(build)
+        if not build:
+            raise Exception(f'Build not started yet. Waiting few seconds.')
+        logging.info(f'Build has been started.')
+        return build
+    
+    def keep_logs_metadata(self, build):
+        fullName = self._modify_url(build.get_job()).full_name
+        number = build.api_json()['number']
+        return json.dumps([{"build": {"fullName": fullName, "number": number}, "enabled": True}])
 
 def wait_for_mergeable_pr(pr, timeout):
     return
