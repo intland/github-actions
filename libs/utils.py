@@ -34,6 +34,9 @@ class JenkinsWrapper:
     def _get_job(self, name):
         return self._modify_url(self.jenkins.get_job(name))
 
+    def _is_running_or_pending(self, build):
+        return self._modify_url(build).api_json()['result'] is None
+
     def connect_to_jenkins(self):
         try:
             logging.info(f"Try to connect to jenkins")
@@ -67,7 +70,7 @@ class JenkinsWrapper:
         has_build_stopped = False
         for build in builds:
             build = self._modify_url(build)
-            if is_build_for_this_pr(build):
+            if is_build_for_this_pr(build) and self._is_running_or_pending(build):
                 logging.info(f"Build of {job_name} job will be stopped and removed")
                 keep_logs(build, self.auth, False)
                 build.stop()
