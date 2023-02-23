@@ -46,6 +46,11 @@ def main():
 
     retry(create_comments_from_issues, timeout, interval)(g, access_token, commit_sha, issues)
 
+    logging.info(f'Deleting branch: {commit_sha} from Sonar')
+    for project in getSonarProjects(url, api_token, timeout, interval):
+        retry(delete_branch, timeout, interval)(url, api_token, project, commit_sha)
+
+
 def getSonarStatusMessage(url, original_url, api_token, commit_sha, timeout, interval):
     message = ''
     for projectKey in getSonarProjects(url, api_token, timeout, interval):
@@ -88,6 +93,15 @@ def getSonarProjects(url, api_token, timeout, interval):
 
 def search(url, page, api_token):
     return requests.get(f'{url}/api/projects/search', params={'p' : page}, auth=(api_token,''), headers=headers, verify=False)
+
+def delete_branch(url, api_token, project, branch):
+    return requests.post(
+        f'{url}/api/project_branches/delete',
+        params={'branch': branch, 'project': project},
+        auth=(api_token,''),
+        headers=headers,
+        verify=False
+    )
 
 def keepLogsMetadata(commit_sha):
     return json.dumps([{"build": {"commit_sha": commit_sha}, "enabled": True}])
