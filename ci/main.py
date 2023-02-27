@@ -23,6 +23,7 @@ def main():
     interval = int(os.environ.get("INPUT_INTERVAL"))
     access_token = os.environ.get("INPUT_ACCESS_TOKEN")
     display_job_name = os.environ.get("INPUT_DISPLAY_JOB_NAME")
+    keep_build_for_ever = os.environ.get('INPUT_KEEP_BUILD', True)
 
     # Preset
     job_query_timeout = 600
@@ -65,7 +66,8 @@ def main():
             raise Exception(result)
         return
 
-    retry(keep_logs, 60, 10)(build, auth)
+    if keep_build_for_ever:
+        retry(keep_logs, 60, 10)(build, auth)
 
     body = f'### [{display_job_name} - Build]({build_url}) status returned **{result}**.'
 
