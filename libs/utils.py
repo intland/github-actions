@@ -335,6 +335,11 @@ def is_build_for_this_pr(build):
     return False
 
 
+def get_missing_commits_from_upstream(github, repo_name, dest_user, dest_branch, source_branch):
+    repository = github.get_repo(repo_name)
+    return repository.compare(f'{dest_user}:{dest_branch}', source_branch).behind_by
+
+
 def getIds(text):
     if text:
         return re.findall(r'#([\d]+)', text)

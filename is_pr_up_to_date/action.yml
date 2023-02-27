@@ -1,0 +1,13 @@
+name: "Jenkins-Action"
+description: "Check whether all the commits from master has been synced to the PR"
+author: "Robert Radi"
+inputs:
+  access_token:
+    description: "GitHub token"
+    required: true
+outputs:
+  pr_is_mergeable:
+    description: "Whether the PR can be merged"
+runs:
+  using: "docker"
+  image: "../is_pr_up_to_date.Dockerfile"
