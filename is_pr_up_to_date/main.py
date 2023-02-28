@@ -2,6 +2,7 @@ import logging
 import os
 
 from github import Github
+from libs.github_graphql import GithubGraphQl
 from libs.utils import *
 
 logging.basicConfig(format='ACTION: %(message)s', level='INFO')
@@ -12,6 +13,7 @@ def main():
     metadata_id = "pr-status-check"
 
     g = Github(access_token)
+    gql = GithubGraphQl(access_token)
     pr = getPullRequest(g)
 
     comment = getCommentById(pr, metadata_id)
@@ -33,8 +35,10 @@ def main():
         issue_comment(
             g,
             metadata_id,
-            f'This PR can not be merged cause it is {missing_commits} commits behind upstream'
+            f'# This PR can not be merged cause it is {missing_commits} commits behind upstream'
         )
+        logging.info("Converting to draft")
+        gql.convert_to_draft(gql.get_pullRequest_id(*pr.base.repo.full_name.split("/"), pr.number))
 
     with open(os.environ['GITHUB_OUTPUT'], 'a') as fh:
         print(f'PR_IS_MERGEABLE={pr_is_mergeable}', file=fh)
