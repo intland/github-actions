@@ -3,6 +3,7 @@ import logging
 import os
 import re
 import requests
+from urllib.parse import quote_plus
 from subprocess import run
 from sys import stderr
 from time import sleep, time
@@ -337,7 +338,7 @@ def is_build_for_this_pr(build):
 
 def get_missing_commits_from_upstream(github, repo_name, dest_user, dest_branch, source_branch):
     repository = github.get_repo(repo_name)
-    return repository.compare(f'{dest_user}:{dest_branch}', source_branch).behind_by
+    return repository.compare(quote_plus(f'{dest_user}:{dest_branch}'), quote_plus(source_branch)).behind_by
 
 
 def getIds(text):
