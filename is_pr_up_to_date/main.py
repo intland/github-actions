@@ -35,7 +35,7 @@ def main():
         issue_comment(
             g,
             metadata_id,
-            f'# This PR can not be merged cause it is {missing_commits} commits behind upstream'
+            f'## This PR can not be merged cause it is {missing_commits} commits behind upstream'
         )
         logging.info("Converting to draft")
         gql.convert_to_draft(gql.get_pullRequest_id(*pr.base.repo.full_name.split("/"), pr.number))

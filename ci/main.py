@@ -52,13 +52,13 @@ def main():
     logging.info('Start a build.')
     queue_item = retry(jenkins.build_job, 60, 10)(job_name, parameters)
     build = retry(jenkins.wait_for_build, start_timeout, interval)(queue_item)
-    build_url = build.url
-    logging.info(f"Build URL: {build_url}")
+    public_build_url =  jenkins.get_public_url(build.url)
+    logging.info(f"Build URL: {public_build_url}")
 
     if access_token:
-        issue_comment(g, metadata_id, f'{display_job_name} - Build started [here]({build_url})', jenkins.keep_logs_metadata(build))
+        issue_comment(g, metadata_id, f'{display_job_name} - Build started [here]({public_build_url})', jenkins.keep_logs_metadata(build))
 
-    result = retry(wait_for_build, 60, 10)(build, timeout, interval)
+    result = retry(wait_for_build, 60, 10)(build, public_build_url, timeout, interval)
 
     if not access_token:
         logging.info("No comment.")
@@ -69,7 +69,7 @@ def main():
     if keep_build_for_ever.lower() == 'true':
         retry(keep_logs, 60, 10)(build, auth)
 
-    body = f'### [{display_job_name} - Build]({build_url}) status returned **{result}**.'
+    body = f'### [{display_job_name} - Build]({public_build_url}) status returned **{result}**.'
 
     try:
         duration = retry(waitForBuildExecution, job_query_timeout, job_query_interval)(build)
