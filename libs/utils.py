@@ -37,6 +37,14 @@ class JenkinsWrapper:
     def _is_running_or_pending(self, build):
         return self._modify_url(build).api_json()['result'] is None
 
+    def get_public_url(self, private_url):
+        public_url = ""
+        if "bitbucket-jenkins.rd2.thingworx.io" in private_url:
+            public_url = private_url.replace('bitbucket-jenkins.rd2.thingworx.io', 'jenkins.rd2.thingworx.io')
+        else:
+            public_url = private_url
+        return public_url
+
     def connect_to_jenkins(self):
         try:
             logging.info(f"Try to connect to jenkins")
@@ -113,8 +121,7 @@ def wait_for_mergeable_pr(pr, timeout):
 #    raise Exception("Pull request is not mergeable")
 
 
-def wait_for_build(build, timeout, interval):
-    build_url = build.url
+def wait_for_build(build, build_url, timeout, interval):
     t0 = time()
     sleep(interval)
     while time() - t0 < timeout:
