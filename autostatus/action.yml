@@ -1,0 +1,19 @@
+name: "Autostatus"
+description: "Move status of mentioned tickets"
+author: "Sandor Zelei"
+inputs:
+  status:
+    description: "Name of the status"
+    required: true
+  access_token:
+    description: "GitHub token"
+    required: true
+  codebeamer_user:
+    description: "Username of API user"
+    required: true
+  codebeamer_password:
+    description: "Password of API user"
+    required: true
+runs:
+  using: "docker"
+  image: "../autostatus.Dockerfile"
