@@ -285,13 +285,7 @@ def getOrganization(githubApi):
 
 
 def getTeams(pr, cbAuth):
-    ids = []
-    ids.extend(getIds(pr.title))
-    ids.extend(getIds(pr.body))
-
-    for c in pr.get_commits():
-        ids.extend(getIds(c.commit.message))
-
+    ids = collectIds(pr)
     teams = []
     for i in set(ids):
         itemGetUrl = f"https://codebeamer.com/cb/api/v3/items/{i}"
@@ -313,11 +307,7 @@ def getTeams(pr, cbAuth):
 
 
 def get_ticket_priority(pr, cbAuth):
-    ids = []
-    ids.extend(getIds(pr.title))
-    ids.extend(getIds(pr.body))
-    for c in pr.get_commits():
-        ids.extend(getIds(c.commit.message))
+    ids = collectIds(pr)
     priority = None
     for id in ids:
         itemGetUrl = f"https://codebeamer.com/cb/api/v3/items/{id}"
@@ -347,6 +337,14 @@ def get_missing_commits_from_upstream(github, repo_name, dest_user, dest_branch,
     repository = github.get_repo(repo_name)
     return repository.compare(quote_plus(f'{dest_user}:{dest_branch}'), quote_plus(source_branch)).behind_by
 
+def collectIds(pr):
+    ids = []
+    ids.extend(getIds(pr.title))
+    ids.extend(getIds(pr.body))
+    for c in pr.get_commits():
+        ids.extend(getIds(c.commit.message))
+
+    return ids
 
 def getIds(text):
     if text:
