@@ -32,28 +32,30 @@ def main():
         else:
             logging.warning(f"Status cannot be resolved for #{trackerItemId} item by '{status}'")    
 
-def updateStatus(id, status, auth):
+def updateStatus(tracker_item_id, status, auth):
     id = status["id"]
     name = status["name"]
 
     data = {
-        'fieldValues': [{
-            'fieldId': 7,
-            'name': 'Status',
-            'type': 'ChoiceFieldValue',
-            'values': [{ 'id': {id}, 'name': {name}, 'type': 'ChoiceOptionReference' }]
+        "fieldValues": [{
+            "fieldId": 7,
+            "name": "Status",
+            "type": "ChoiceFieldValue",
+            "values": [{ "id": id, "name": name, "type": "ChoiceOptionReference" }]
         }]}
-
-    updateStatus = f"https://codebeamer.com/cb/api/v3/items/{id}/fields?quietMode=false"
+    updateStatus = f"https://codebeamer.com/cb/api/v3/items/{tracker_item_id}/fields?quietMode=false"
 
     try:
         logging.info(f"Fetching information from: {updateStatus}")
-        response = requests.put(url=updateStatus, auth=auth, headers={'accept':'application/json', 'Content-Type':'application/json'}, data=data)
+        response = requests.put(url=updateStatus, auth=auth, headers={'accept':'application/json', 'Content-Type':'application/json'}, json=data)
+        logging.info(f"Response: {response.text}")
         if response.status_code == 200:
-            logging.warning(f"Ticket({id}) status cannot be change to: '{status['name']}'", e)
+            logging.warning(f"Ticket({id}) status has been changed to: {name}")
 
     except Exception as e:
-        logging.warning(f"Ticket({id}) status cannot be change to: '{status['name']}'", e)
+        logging.warning(
+            f"Ticket({id}) status cannot be changed to: {name}. Exception: {e}"
+        )
 
 def getStatus(id, status, auth):
     itemStatuses = f"https://codebeamer.com/cb/api/v3/items/{id}/fields/7/options?page=1&pageSize=100"

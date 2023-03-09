@@ -222,7 +222,7 @@ def keep_logs(build, auth, enabled=True):
 def getPullRequest(githubApi):
     github_event = getGithubEvent()
     pr_repo_name = github_event["pull_request"]["base"]["repo"]["full_name"]
-    pr_number = github_event["number"]
+    pr_number = github_event["number"] if "number" in github_event else github_event["pull_request"]['number']
 
     return githubApi.get_repo(pr_repo_name).get_pull(pr_number)
 
