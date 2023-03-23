@@ -205,11 +205,13 @@ def create_review_comment(
             data=json.dumps(payload)
         )
         r.raise_for_status()
+        return True
     except Exception as e:
         if e.response.status_code == 422:
             logging.info(f'Error code: {e.response.status_code} is expected as of now.')
         else:
             raise Exception(f"Post request returned {e.response.status_code}. Message: {e.response.text}")
+        return False
 
 def keep_logs(build, auth, enabled=True):
     if build.api_json()['keepLog'] == enabled:
