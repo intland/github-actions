@@ -28,11 +28,6 @@ def main():
 
     # Preset
     g = Github(access_token)
-    message = getSonarStatusMessage(url, original_url, api_token, commit_sha, timeout, interval)
-    if message:
-        issue_comment(g, "sonar-report", "### Sonar Quality check result\n\n" + message, keepLogsMetadata(commit_sha))
-    else:
-        issue_comment(g, "sonar-report", "### Sonar Quality check result\n\nQUALITY GATE STATUS: PASSED", keepLogsMetadata(commit_sha))
 
     # Review comments based on Solar result
     logging.info(f'Creating comments on commit: {commit_sha}')
@@ -44,7 +39,11 @@ def main():
     code_smells = retry(search_in_sonar_issues, timeout, interval)(url, api_token, mapping, commit_sha, 'CODE_SMELL', 'CRITICAL,BLOCKER', 'true')
     issues      = bugs + code_smells
 
-    retry(create_comments_from_issues, timeout, interval)(g, access_token, commit_sha, issues)
+    any_comment_submitted = retry(create_comments_from_issues, timeout, interval)(g, access_token, commit_sha, issues)
+    if any_comment_submitted:
+        issue_comment(g, "sonar-report", "### Sonar Quality check result\n\n FAILED", keepLogsMetadata(commit_sha))
+    else:
+        issue_comment(g, "sonar-report", "### Sonar Quality check result\n\n PASSED", keepLogsMetadata(commit_sha))
 
     logging.info(f'Deleting branch: {commit_sha} from Sonar')
     for project in getSonarProjects(url, api_token, timeout, interval):
@@ -137,9 +136,10 @@ def get_component_path_mappings(files):
     return mapping
 
 def create_comments_from_issues(github_api, access_token, commit_sha, issues):
+    is_any_comment_created = False
     for issue in issues:
         content = format_content(list(DNS.keys())[0], issue)
-        create_review_comment(
+        is_successful = create_review_comment(
             github_api=github_api,
             auth=access_token,
             commit_sha=commit_sha,
@@ -148,6 +148,10 @@ def create_comments_from_issues(github_api, access_token, commit_sha, issues):
             line=issue['endLine'],
             start_line=issue['startLine'] if issue['startLine'] != issue['endLine'] else None
         )
+        if is_successful:
+            is_any_comment_created = True
+
+    return is_any_comment_created
 
 def format_issues(issues, path_prefix):
     formatted_issues = []
