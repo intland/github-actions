@@ -39,11 +39,6 @@ def main():
 
     for job_name in job_names.split(','):
         job_name = job_name.strip()
-
-        logging.info(f"Removing '{job_name}' from queue")
-        retry(jenkins.remove_from_queue, queue_query_timeout, queue_query_interval)(job_name)
-
-        logging.info(f"Stopping '{job_name}' build")
         if retry(jenkins.stop_and_remove, job_query_timeout, job_query_interval)(job_name):
             issue_comment(github, f"removed-{job_name}", f"_Builds running on this PR stopped and deleted for job: {job_name}_")
 

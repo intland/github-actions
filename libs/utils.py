@@ -26,7 +26,7 @@ class JenkinsWrapper:
             raise Exception('Build is currently blocked.')
 
     def _modify_url(self, object_to_modify):
-        if(object_to_modify.url.split('/')[2] == 'jenkins.rd2.thingworx.io'):
+        if (object_to_modify.url.split('/')[2] == 'jenkins.rd2.thingworx.io'):
             object_to_modify.url = object_to_modify.url.replace(
                 'jenkins.rd2.thingworx.io', 'bitbucket-jenkins.rd2.thingworx.io'
             )
@@ -55,6 +55,7 @@ class JenkinsWrapper:
             raise Exception('Could not connect to Jenkins.') from e
 
     def remove_from_queue(self, job_name):
+        logging.info("Checking all queue items:")
         for queue_item in self.jenkins.queue.api_json()['items']:
             name = queue_item.get('task').get('name')
             logging.info(f"Queue item name is {name}")
@@ -70,7 +71,7 @@ class JenkinsWrapper:
         if not job:
             logging.info(f"Job is not found by name: {job_name}")
             return False
-        
+
         builds = job.iter_builds()
         if not builds:
             logging.info("No builds for job")
@@ -79,11 +80,13 @@ class JenkinsWrapper:
         has_build_stopped = False
         for build in builds:
             build = self._modify_url(build)
-            if is_build_for_this_pr(build) and self._is_running_or_pending(build):
-                logging.info(f"Build of {job_name} job will be stopped and removed")
+            if is_build_for_this_pr(build):
                 keep_logs(build, self.auth, False)
-                build.stop()
-                has_build_stopped = True
+                if self._is_running_or_pending(build):
+                    logging.info(f"Build of {job_name} job will be stopped and removed")
+                    self.remove_from_queue(job_name)
+                    build.stop()
+                    has_build_stopped = True
 
         return has_build_stopped
 
@@ -104,6 +107,7 @@ class JenkinsWrapper:
         fullName = self._modify_url(build.get_job()).full_name
         number = build.api_json()['number']
         return json.dumps([{"build": {"fullName": fullName, "number": number}, "enabled": True}])
+
 
 def wait_for_mergeable_pr(pr, timeout):
     return
@@ -163,6 +167,7 @@ def issue_comment(githubApi, metadata_id, content, metadata={}):
     logging.info("New comment is created")
     pr.create_issue_comment(content)
 
+
 def delete_review_comments(github_api, user_name):
     pr = getPullRequest(github_api)
     comments = pr.get_review_comments()
@@ -170,6 +175,7 @@ def delete_review_comments(github_api, user_name):
     for comment in comments:
         if comment.user.login == user_name:
             comment.delete()
+
 
 def create_review_comment(
     github_api,
@@ -212,6 +218,7 @@ def create_review_comment(
         else:
             raise Exception(f"Post request returned {e.response.status_code}. Message: {e.response.text}")
         return False
+
 
 def keep_logs(build, auth, enabled=True):
     if build.api_json()['keepLog'] == enabled:
@@ -339,6 +346,7 @@ def get_missing_commits_from_upstream(github, repo_name, dest_user, dest_branch,
     repository = github.get_repo(repo_name)
     return repository.compare(quote_plus(f'{dest_user}:{dest_branch}'), quote_plus(source_branch)).behind_by
 
+
 def collectIds(pr):
     ids = []
     ids.extend(getIds(pr.title))
@@ -347,6 +355,7 @@ def collectIds(pr):
         ids.extend(getIds(c.commit.message))
 
     return ids
+
 
 def getIds(text):
     if text:
