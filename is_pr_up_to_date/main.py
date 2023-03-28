@@ -7,6 +7,7 @@ from libs.utils import *
 
 logging.basicConfig(format='ACTION: %(message)s', level='INFO')
 
+
 def main():
     access_token = os.environ.get("INPUT_ACCESS_TOKEN")
 
@@ -18,8 +19,11 @@ def main():
 
     comment = getCommentById(pr, metadata_id)
     if comment:
-        logging.info("Comment is deleted")
-        comment.delete()
+        try:
+            comment.delete()
+            logging.info("Comment is deleted")
+        except Exception as e:
+            logging.debug(f"Error deleting comment:\n{e}")
 
     missing_commits = get_missing_commits_from_upstream(
         github=g,
@@ -32,16 +36,20 @@ def main():
     logging.info(f'PR is mergable: {pr_is_mergeable} hence number of missing commits: {missing_commits}')
 
     if pr_is_mergeable == 'false':
-        issue_comment(
-            g,
-            metadata_id,
-            f'## This PR can not be merged cause it is {missing_commits} commits behind upstream'
-        )
-        logging.info("Converting to draft")
-        gql.convert_to_draft(gql.get_pullRequest_id(*pr.base.repo.full_name.split("/"), pr.number))
+        try:
+            issue_comment(
+                g,
+                metadata_id,
+                f'## This PR can not be merged cause it is {missing_commits} commits behind upstream'
+            )
+            logging.info("Converting to draft")
+            gql.convert_to_draft(gql.get_pullRequest_id(*pr.base.repo.full_name.split("/"), pr.number))
+        except Exception as e:
+            logging.debug(f"Error converting to draft:\n{e}")
 
     with open(os.environ['GITHUB_OUTPUT'], 'a') as fh:
         print(f'PR_IS_MERGEABLE={pr_is_mergeable}', file=fh)
+
 
 if __name__ == "__main__":
     main()
