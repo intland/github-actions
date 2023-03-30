@@ -81,7 +81,10 @@ class JenkinsWrapper:
         for build in builds:
             build = self._modify_url(build)
             if is_build_for_this_pr(build):
-                keep_logs(build, self.auth, False)
+                try:
+                    keep_logs(build, self.auth, False)
+                except Exception as e:
+                    logging.warn(f"Keep logs cannot be changed on this build:\n{e}")
                 if self._is_running_or_pending(build):
                     logging.info(f"Build of {job_name} job will be stopped and removed")
                     self.remove_from_queue(job_name)
