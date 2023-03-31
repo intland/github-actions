@@ -38,7 +38,7 @@ def main():
             f'## This PR can not be merged cause it is {missing_commits} commits behind upstream'
         )
         logging.info("Converting to draft")
-        gql.convert_to_draft(gql.get_pullRequest_id(*pr.base.repo.full_name.split("/"), pr.number))
+        #gql.convert_to_draft(gql.get_pullRequest_id(*pr.base.repo.full_name.split("/"), pr.number))
 
     with open(os.environ['GITHUB_OUTPUT'], 'a') as fh:
         print(f'PR_IS_MERGEABLE={pr_is_mergeable}', file=fh)
