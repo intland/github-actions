@@ -67,7 +67,7 @@ def main():
         return
 
     if keep_build_for_ever.lower() == 'true':
-        retry(keep_logs, 60, 10)(build, auth)
+        pass # retry(keep_logs, 60, 10)(build, auth)
 
     body = f'### [{display_job_name} - Build]({public_build_url}) status returned **{result}**.'
 
