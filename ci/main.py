@@ -67,7 +67,10 @@ def main():
         return
 
     if keep_build_for_ever.lower() == 'true':
-        pass # retry(keep_logs, 60, 10)(build, auth)
+        try:
+            retry(keep_logs, 60, 10)(build, auth)
+        except Exception as e:
+            logging.warn(f"Cannot enable keep_this_build_forever parameter for this job: \n {e}")
 
     body = f'### [{display_job_name} - Build]({public_build_url}) status returned **{result}**.'
 
