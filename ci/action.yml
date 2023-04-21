@@ -25,6 +25,10 @@ inputs:
     description: "To keep build for ever"
     required: false
     default: 'True'
+  file_pattern:
+    description: "Important files"
+    required: false
+    default: '*'
   parameters:
     description: 'Build parameters in JSON format e.g. `{"field1":"value1"}`'
     required: false
