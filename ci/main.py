@@ -1,6 +1,8 @@
 import json
 import logging
 import os
+import fnmatch
+from pathlib import Path
 from api4jenkins import Jenkins
 from github import Github
 from libs.utils import *
@@ -24,6 +26,7 @@ def main():
     access_token = os.environ.get("INPUT_ACCESS_TOKEN")
     display_job_name = os.environ.get("INPUT_DISPLAY_JOB_NAME")
     keep_build_for_ever = os.environ.get('INPUT_KEEP_BUILD', 'true')
+    file_pattern = os.environ.get('FILE_PATTERN', 'true')
 
     # Preset
     job_query_timeout = 600
@@ -117,6 +120,12 @@ def waitForBuildExecution(build):
 
     return duration
 
+def should_sonar_run(pull_request, pattern):
+    should_run = False
+    for file in pull_request.get_files():
+        if(fnmatch.fnmatch(Path(file.filename), pattern)):
+            should_run = True
+    return should_run
 
 if __name__ == "__main__":
     main()
