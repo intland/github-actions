@@ -14,6 +14,10 @@ inputs:
   commit_sha:
     description: "Last commit SHA, it is used for branch in Sonar"
     required: true
+  file_pattern:
+    description: "Important files"
+    required: false
+    default: '*'
   timeout:
     description: "Timeout in seconds for fetching sonar check"
     required: false
