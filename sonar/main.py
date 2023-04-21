@@ -1,6 +1,8 @@
 import json
 import logging
 import os
+import fnmatch
+from pathlib import Path
 from github import Github
 from libs.utils import *
 import requests
@@ -25,6 +27,7 @@ def main():
     commit_sha = os.environ.get("INPUT_COMMIT_SHA")
     timeout = int(os.environ.get("INPUT_TIMEOUT"))
     interval = int(os.environ.get("INPUT_INTERVAL"))
+    file_pattern = os.environ.get('FILE_PATTERN', 'true')
 
     # Preset
     g = Github(access_token)
@@ -181,6 +184,13 @@ def format_content(url, issue):
     if 'sub_message' in issue:
         content = content + f"<br/>{issue['sub_message']}"
     return content
+
+def should_sonar_run(pull_request, pattern):
+    should_run = False
+    for file in pull_request.get_files():
+        if(fnmatch.fnmatch(Path(file.filename), pattern)):
+            should_run = True
+    return should_run
 
 
 if __name__ == "__main__":
