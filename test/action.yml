@@ -1,0 +1,10 @@
+name: "test-Action"
+description: "Start test jobs and report back test"
+author: "Miklos Gergely"
+inputs:
+  access_token:
+    description: "GitHub token"
+    required: false
+runs:
+  using: "docker"
+  image: "../test.Dockerfile"
