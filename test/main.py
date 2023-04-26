@@ -12,7 +12,7 @@ from libs.utils import *
 
 log_level = os.environ.get('INPUT_LOG_LEVEL', 'INFO')
 logging.basicConfig(format='JENKINS_ACTION: %(message)s', level=log_level)
-CONFIG_FILE = "./job_config.json"
+CONFIG_FILE = "/app/job_config.json"
 
 
 def glob_to_re(pat: str) -> str:
