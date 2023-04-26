@@ -1,0 +1,16 @@
+name: "test2-Action"
+description: "Start test2 jobs and report back test2"
+author: "Miklos Gergely"
+inputs:
+  access_token:
+    description: "GitHub token"
+    required: false
+  parameters:
+    description: "parameters"
+    required: false
+  extra_parameters:
+    description: "extra_parameters"
+    required: false
+runs:
+  using: "docker"
+  image: "../test2.Dockerfile"
