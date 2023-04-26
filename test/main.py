@@ -101,7 +101,7 @@ def main():
                 extra_params.update(item["extra_parameters"])
                 break
 
-    with open(os.environ.get("GITHUB_OUTPUT")) as f:
+    with open(os.environ.get("GITHUB_OUTPUT"), "w") as f:
         json.dump({"extra_parameters": extra_params}, f)
 
 
