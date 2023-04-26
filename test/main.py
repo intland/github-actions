@@ -102,7 +102,7 @@ def main():
                 break
 
     with open(os.environ.get("GITHUB_OUTPUT"), "w") as f:
-        json.dump({"extra_parameters": extra_params}, f)
+        f.write(f'extra_parameters="{json.dumps(extra_params)}"')
 
 
 if __name__ == "__main__":
