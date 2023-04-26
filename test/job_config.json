@@ -1,0 +1,25 @@
+{
+    "parameters_by_path": [
+        {
+            "path_patterns": ["**/*.txt", "**/*.java"],
+            "extra_parameters": {
+                "c": 81,
+                "d": "txt and java anywhere"
+            }
+        },
+        {
+            "path_patterns": ["docs/*"],
+            "extra_parameters": {
+                "c": 82,
+                "e": "smth in docs/"
+            }
+        },
+        {
+            "path_patterns": ["license.md"],
+            "extra_parameters": {
+                "c": 83,
+                "d": "license"
+            }
+        }
+    ]
+}
