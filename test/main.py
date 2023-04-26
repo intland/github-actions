@@ -101,6 +101,7 @@ def main():
                 extra_params.update(item["extra_parameters"])
                 break
 
+    logging.info(f"extra_parameters=\'{json.dumps(extra_params)}\'")
     with open(os.environ.get("GITHUB_OUTPUT"), "w") as f:
         f.write(f'"extra_parameters=\'{json.dumps(extra_params)}\'"')
 
