@@ -91,8 +91,9 @@ def get_extra_params(config, filenames):
     extra_params = {}
     for item in config['parameters_by_path']:
         for pattern in item['path_patterns']:
-            if glob_filter(filenames, pattern):
+            if (deb := glob_filter([f for f in files], pattern)):
                 extra_params.update(item["extra_parameters"])
+                print([i for i in deb])
                 break
     return extra_params
 
