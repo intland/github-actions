@@ -84,16 +84,15 @@ def glob_to_re(pat: str) -> str:
 
 
 def glob_filter(names, pattern):
-    return (name for name in names if re.match(glob_to_re(pattern), name))
+    return [name for name in names if re.match(glob_to_re(pattern), name)]
 
 
 def get_extra_params(config, filenames):
     extra_params = {}
     for item in config['parameters_by_path']:
         for pattern in item['path_patterns']:
-            if (deb := glob_filter(filenames, pattern)):
+            if glob_filter(filenames, pattern):
                 extra_params.update(item["extra_parameters"])
-                logging.info(json.dumps([i for i in deb]))
                 break
     return extra_params
 
