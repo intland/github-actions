@@ -87,20 +87,24 @@ def glob_filter(names, pattern):
     return (name for name in names if re.match(glob_to_re(pattern), name))
 
 
+def get_extra_params(config, filenames):
+    extra_params = {}
+    for item in config['parameters_by_path']:
+        for pattern in item['path_patterns']:
+            if glob_filter(filenames, pattern):
+                extra_params.update(item["extra_parameters"])
+                break
+    return extra_params
+
+
 def main():
     access_token = os.environ.get("INPUT_ACCESS_TOKEN")
     github = Github(access_token)
     pr = getPullRequest(github)
     logging.info(f"Files updated: {json.dumps([f.filename for f in pr.get_files()])}")
-    extra_params = {}
     with open(CONFIG_FILE) as f:
         config = json.loads(f.read())
-    for item in config['parameters_by_path']:
-        for pattern in item['path_patterns']:
-            if glob_filter([f.filename for f in pr.get_files()], pattern):
-                extra_params.update(item["extra_parameters"])
-                break
-
+    extra_params = get_extra_params(config, [f.filename for f in pr.get_files()])
     logging.info(f"extra_parameters=\'{json.dumps(extra_params)}\'")
     # print(f'::set-output name=extra_parameters::{json.dumps(extra_params)}')
     with open(os.environ.get("GITHUB_OUTPUT"), "a") as f:
