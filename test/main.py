@@ -91,7 +91,7 @@ def main():
     access_token = os.environ.get("INPUT_ACCESS_TOKEN")
     github = Github(access_token)
     pr = getPullRequest(github)
-
+    logging.info(f"Files updated: {json.dumps([f.filename for f in pr.get_files()])}")
     extra_params = {}
     with open(CONFIG_FILE) as f:
         config = json.loads(f.read())
@@ -102,9 +102,9 @@ def main():
                 break
 
     logging.info(f"extra_parameters=\'{json.dumps(extra_params)}\'")
-    print(f'::set-output name=extra_parameters::{json.dumps(extra_params)}')
-    # with open(os.environ.get("GITHUB_OUTPUT"), "w") as f:
-    #     f.write(f'"extra_parameters=\'{json.dumps(extra_params)}\'"')
+    # print(f'::set-output name=extra_parameters::{json.dumps(extra_params)}')
+    with open(os.environ.get("GITHUB_OUTPUT"), "a") as f:
+        f.write(f'"extra_parameters=\'{json.dumps(extra_params)}\'"')
 
 
 if __name__ == "__main__":
