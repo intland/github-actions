@@ -102,8 +102,9 @@ def main():
                 break
 
     logging.info(f"extra_parameters=\'{json.dumps(extra_params)}\'")
-    with open(os.environ.get("GITHUB_OUTPUT"), "w") as f:
-        f.write(f'"extra_parameters=\'{json.dumps(extra_params)}\'"')
+    print(f'::set-output name=extra_parameters::{json.dumps(extra_params)}')
+    # with open(os.environ.get("GITHUB_OUTPUT"), "w") as f:
+    #     f.write(f'"extra_parameters=\'{json.dumps(extra_params)}\'"')
 
 
 if __name__ == "__main__":
