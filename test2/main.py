@@ -19,7 +19,7 @@ def main():
     logging.info(os.environ.get("INPUT_EXTRA_PARAMETERS"))
     content.update(**json.loads(os.environ.get("INPUT_EXTRA_PARAMETERS", '{}')))
 
-    pr.create_issue_comment(content)
+    pr.create_issue_comment(json.dumps(content, indent=4, default=str))
 
 
 if __name__ == "__main__":
