@@ -1,11 +1,8 @@
 import logging
-from datetime import datetime
 import os
 import re
 import json
-import glob
 
-from api4jenkins import Jenkins
 from github import Github
 
 from libs.utils import *
