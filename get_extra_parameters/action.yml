@@ -1,0 +1,13 @@
+name: "GetExtraParameters"
+description: "Provides extra parameters for downstream Jenkins jobs"
+author: "Miklos Gergely"
+inputs:
+  access_token:
+    description: "GitHub token"
+    required: false
+outputs:
+  extra_parameters:
+    description: "extra parameters"
+runs:
+  using: "docker"
+  image: "../get_extra_parameters.Dockerfile"
