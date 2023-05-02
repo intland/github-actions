@@ -9,7 +9,6 @@ from libs.utils import *
 
 log_level = os.environ.get('INPUT_LOG_LEVEL', 'INFO')
 logging.basicConfig(format='JENKINS_ACTION: %(message)s', level=log_level)
-CONFIG_FILE = "/app/job_config.json"
 
 
 def glob_to_re(pat: str) -> str:
@@ -93,10 +92,14 @@ def get_extra_params(config, filenames):
 
 def main():
     access_token = os.environ.get("INPUT_ACCESS_TOKEN")
+    config_file = os.environ.get("INPUT_CONFIG_FILE_NAME")
+    if not config_file:
+        raise Exception("Please provide a configuration file.")
+    config_file = f"/app/{config_file}"
     github = Github(access_token)
     pr = getPullRequest(github)
     logging.info(f"Files updated: {json.dumps([f.filename for f in pr.get_files()])}")
-    with open(CONFIG_FILE) as f:
+    with open(config_file) as f:
         config = json.loads(f.read())
     extra_params = get_extra_params(config, [f.filename for f in pr.get_files()])
     logging.info(f"extra_parameters=\'{json.dumps(extra_params)}\'")
