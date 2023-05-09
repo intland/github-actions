@@ -68,7 +68,7 @@ def main():
 
     if keep_build_for_ever.lower() == 'true':
         try:
-            retry(keep_logs, 60, 10)(build, auth)
+            pass # retry(keep_logs, 60, 10)(build, auth)
         except Exception as e:
             logging.warn(f"Cannot enable keep_this_build_forever parameter for this job: \n {e}")
 
