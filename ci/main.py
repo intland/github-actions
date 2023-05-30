@@ -103,11 +103,17 @@ def buildResultMessage(test_reports):
     if test_reports is None:
         return "\n_No test were ran_"
     else:
+        failed_tests = ""
+        for suite in test_reports.suites:
+            for case in suite.cases:
+                if(case.status == "FAILED"):
+                    failed_tests += f"- {case.name}\n"
+
         test_reports_json = test_reports.api_json()
         p = test_reports_json["passCount"]
         f = test_reports_json["failCount"]
         s = test_reports_json["skipCount"]
-        return f"\n\n## Test Results:\n**Passed: {p}**\n**Failed: {f}**\n**Skipped: {s}**"
+        return f"\n\n## Test Results:\n**Passed: {p}**\n**Failed: {f}**\n{failed_tests}\n**Skipped: {s}**"
 
 
 def waitForBuildExecution(build):
