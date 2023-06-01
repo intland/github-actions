@@ -103,14 +103,8 @@ def buildResultMessage(test_reports, build_url):
     if test_reports is None:
         return "\n_No test were ran_"
     else:
-        failed_tests = ""
-        for suite in test_reports.suites:
-            for case in suite.cases:
-                if(case.status == "FAILED"):
-                    splitted_class_name = case.class_name.split(".")
-                    class_prefix = ".".join(splitted_class_name[0:-1])
-                    class_name = class_prefix[-1]
-                    failed_tests += f"- [{case.name}]({build_url}/testReport/junit/{suite}/{class_prefix}/{class_name})\n"
+        result = retry(get_failed_tests, 60, 10)(test_reports, build_url)
+        failed_tests = result if not result else "N/A"
 
         test_reports_json = test_reports.api_json()
         p = test_reports_json["passCount"]
@@ -125,6 +119,21 @@ def waitForBuildExecution(build):
         raise Exception(f'Build has not finished yet. Waiting few seconds.')
 
     return duration
+
+
+def get_failed_tests(test_reports, build_url):
+    failed_tests = ""
+    try:
+        for suite in test_reports.suites:
+            for case in suite.cases:
+                if(case.status == "FAILED"):
+                    splitted_class_name = case.class_name.split(".")
+                    class_prefix = ".".join(splitted_class_name[0:-1])
+                    class_name = splitted_class_name[-1]
+                    failed_tests += f"- [{case.name}]({build_url}/testReport/junit/{class_prefix}/{class_name})\n"
+        return failed_tests
+    except Exception:
+        return failed_tests
 
 
 if __name__ == "__main__":
