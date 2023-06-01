@@ -104,7 +104,7 @@ def buildResultMessage(test_reports, build_url):
         return "\n_No test were ran_"
     else:
         result = retry(get_failed_tests, 60, 10)(test_reports, build_url)
-        failed_tests = result if not result else "N/A"
+        failed_tests = result if result else "N/A"
 
         test_reports_json = test_reports.api_json()
         p = test_reports_json["passCount"]
