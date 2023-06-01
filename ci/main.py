@@ -83,7 +83,7 @@ def main():
         issue_comment(g, metadata_id, body, jenkins.keep_logs_metadata(build))
         raise Exception("Error fetching build details")
 
-    issue_comment(g, metadata_id, f"{body}\n\n{buildResultMessage(build.get_test_report())}", jenkins.keep_logs_metadata(build))
+    issue_comment(g, metadata_id, f"{body}\n\n{buildResultMessage(build.get_test_report(), public_build_url)}", jenkins.keep_logs_metadata(build))
 
     if result in ('FAILURE', 'ABORTED'):
         raise Exception(result)
@@ -99,7 +99,7 @@ def convertToJson(parameters):
     return {}
 
 
-def buildResultMessage(test_reports):
+def buildResultMessage(test_reports, build_url):
     if test_reports is None:
         return "\n_No test were ran_"
     else:
@@ -107,7 +107,10 @@ def buildResultMessage(test_reports):
         for suite in test_reports.suites:
             for case in suite.cases:
                 if(case.status == "FAILED"):
-                    failed_tests += f"- {case.name}\n"
+                    splitted_class_name = case.class_name.split(".")
+                    class_prefix = ".".join(splitted_class_name[0:-1])
+                    class_name = class_prefix[-1]
+                    failed_tests += f"- [{case.name}]({build_url}/testReport/junit/{suite}/{class_prefix}/{class_name})\n"
 
         test_reports_json = test_reports.api_json()
         p = test_reports_json["passCount"]
