@@ -83,7 +83,7 @@ def main():
         issue_comment(g, metadata_id, body, jenkins.keep_logs_metadata(build))
         raise Exception("Error fetching build details")
 
-    issue_comment(g, metadata_id, f"{body}\n\n{buildResultMessage(build.get_test_report())}", jenkins.keep_logs_metadata(build))
+    issue_comment(g, metadata_id, f"{body}\n\n{buildResultMessage(build.get_test_report(), public_build_url)}", jenkins.keep_logs_metadata(build))
 
     if result in ('FAILURE', 'ABORTED'):
         raise Exception(result)
@@ -99,15 +99,18 @@ def convertToJson(parameters):
     return {}
 
 
-def buildResultMessage(test_reports):
+def buildResultMessage(test_reports, build_url):
     if test_reports is None:
         return "\n_No test were ran_"
     else:
+        result = retry(get_failed_tests, 60, 10)(test_reports, build_url)
+        failed_tests = result if not result else "N/A"
+
         test_reports_json = test_reports.api_json()
         p = test_reports_json["passCount"]
         f = test_reports_json["failCount"]
         s = test_reports_json["skipCount"]
-        return f"\n\n## Test Results:\n**Passed: {p}**\n**Failed: {f}**\n**Skipped: {s}**"
+        return f"\n\n## Test Results:\n**Passed: {p}**\n**Failed: {f}**\n{failed_tests}\n**Skipped: {s}**"
 
 
 def waitForBuildExecution(build):
@@ -116,6 +119,21 @@ def waitForBuildExecution(build):
         raise Exception(f'Build has not finished yet. Waiting few seconds.')
 
     return duration
+
+
+def get_failed_tests(test_reports, build_url):
+    failed_tests = ""
+    try:
+        for suite in test_reports.suites:
+            for case in suite.cases:
+                if(case.status == "FAILED"):
+                    splitted_class_name = case.class_name.split(".")
+                    class_prefix = ".".join(splitted_class_name[0:-1])
+                    class_name = splitted_class_name[-1]
+                    failed_tests += f"- [{case.name}]({build_url}/testReport/junit/{class_prefix}/{class_name})\n"
+        return failed_tests
+    except Exception:
+        return failed_tests
 
 
 if __name__ == "__main__":
