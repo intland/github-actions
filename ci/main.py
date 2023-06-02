@@ -70,7 +70,7 @@ def main():
         try:
             pass # retry(keep_logs, 60, 10)(build, auth)
         except Exception as e:
-            logging.warn(f"Cannot enable keep_this_build_forever parameter for this job: \n {e}")
+            logging.warning(f"Cannot enable keep_this_build_forever parameter for this job: \n {e}")
 
     body = f'### [{display_job_name} - Build]({public_build_url}) status returned **{result}**.'
 
@@ -133,7 +133,7 @@ def get_failed_tests(test_reports, build_url):
                     failed_tests += f"- [{case.name}]({build_url}/testReport/junit/{class_prefix}/{class_name})\n"
         return failed_tests
     except Exception as e:
-        logging.warn(f"Cannot get link for broken tests: \n {e}")   
+        logging.warning(f"Cannot get link for broken tests: \n {e}")   
         return failed_tests
 
 
