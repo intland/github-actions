@@ -130,7 +130,7 @@ def get_failed_tests(test_reports, build_url):
                     splitted_class_name = case.class_name.split(".")
                     class_prefix = ".".join(splitted_class_name[0:-1])
                     class_name = splitted_class_name[-1]
-                    failed_tests += f"- [{case.name}]({build_url}/testReport/junit/{class_prefix}/{class_name})\n"
+                    failed_tests += f"- [{case.class_name}.{case.name}]({build_url}testReport/junit/{class_prefix}/{class_name}/{case.name})\n"
         return failed_tests
     except Exception as e:
         logging.warning(f"Cannot get link for broken tests: \n {e}")   
