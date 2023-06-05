@@ -104,7 +104,7 @@ def buildResultMessage(test_reports, build_url):
         return "\n_No test were ran_"
     else:
         result = retry(get_failed_tests, 60, 10)(test_reports, build_url)
-        failed_tests = result if result else "N/A"
+        failed_tests = result if result else ""
 
         test_reports_json = test_reports.api_json()
         p = test_reports_json["passCount"]
@@ -126,7 +126,7 @@ def get_failed_tests(test_reports, build_url):
     try:
         for suite in test_reports.suites:
             for case in suite.cases:
-                if(case.status == "FAILED"):
+                if(case.status == "FAILED" or case.status == "REGRESSION"):
                     splitted_class_name = case.class_name.split(".")
                     class_prefix = ".".join(splitted_class_name[0:-1])
                     class_name = splitted_class_name[-1]
