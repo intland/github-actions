@@ -98,7 +98,7 @@ class JenkinsWrapper:
         return job.build(**parameters)
 
     def wait_for_build(self, queue_item):
-        retry(self._wait_for_left_item, 60, 3)(queue_item)
+        retry(self._wait_for_left_item, 600, 10)(queue_item)
         build = queue_item.get_build()
         build = self._modify_url(build)
         if not build:
