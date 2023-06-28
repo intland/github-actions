@@ -8,6 +8,10 @@ inputs:
   config_file_name:
     description: "Name of the config file to be used, e.g.: job_config.json"
     required: true
+  parameters:
+    description: "Base parameters that can be overwritten, must be valid json"
+    required: false
+    default: '{}'
 outputs:
   extra_parameters:
     description: "extra parameters"
