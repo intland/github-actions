@@ -93,6 +93,7 @@ def get_extra_params(config, filenames):
 def main():
     access_token = os.environ.get("INPUT_ACCESS_TOKEN")
     config_file = os.environ.get("INPUT_CONFIG_FILE_NAME")
+    base_parameters = json.loads(os.environ.get("INPUT_PARAMETERS"))
     if not config_file:
         raise Exception("Please provide a configuration file.")
     config_file = f"/app/{config_file}"
@@ -102,9 +103,10 @@ def main():
     with open(config_file) as f:
         config = json.loads(f.read())
     extra_params = get_extra_params(config, [f.filename for f in pr.get_files()])
-    logging.info(f"extra_parameters=\'{json.dumps(extra_params)}\'")
+    base_parameters.update(extra_params)
+    logging.info(f"extra_parameters=\'{json.dumps(base_parameters)}\'")
     with open(os.environ.get("GITHUB_OUTPUT"), "a") as f:
-        f.write(f'extra_parameters={json.dumps(extra_params)}')
+        f.write(f'extra_parameters={json.dumps(base_parameters)}')
 
 
 if __name__ == "__main__":

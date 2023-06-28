@@ -1,0 +1,18 @@
+{
+    "parameters_by_path": [
+        {
+            "path_patterns": ["cb-ui/**", "cb-api/**"],
+            "description": "run test-jest",
+            "extra_parameters": {
+                "RUN_JEST_TESTS": true
+            }
+        },
+        {
+            "path_patterns": ["zk/cb/src/com/intland/codebeamer/controller/rest/**", "cb-api/**"],
+            "description": "build artifacts",
+            "extra_parameters": {
+                "BUILD_ARTIFACT": true
+            }
+        }
+    ]
+}
