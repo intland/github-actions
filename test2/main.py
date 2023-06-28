@@ -16,9 +16,6 @@ def main():
     pr = getPullRequest(github)
 
     content = json.loads(os.environ.get("INPUT_PARAMETERS", '{}'))
-    logging.info(os.environ.get("INPUT_EXTRA_PARAMETERS"))
-    content.update(**json.loads(os.environ.get("INPUT_EXTRA_PARAMETERS", '{}')))
-
     pr.create_issue_comment(json.dumps(content, indent=4, default=str))
 
 
