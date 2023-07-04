@@ -15,7 +15,8 @@ headers = {'User-Agent':'groovy-2.4.4', 'Accept':'application/json'}
 
 # Some DevOps issue, using internal IP
 DNS = {
-  "https://sq.intland.de": "https://172.30.0.14"
+  "https://sq.intland.de": "https://172.30.0.14",
+  "https://sonarcloud.io": "https://sonarcloud.io"
 }
 
 def main():
