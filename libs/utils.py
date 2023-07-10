@@ -339,7 +339,7 @@ def is_build_for_this_pr(build):
         param = find_params(build, 'CODEBEAMER_REPOSITORY')
         if not param:
             logging.info("CODEBEAMER_REPOSITORY parameter cannot be found in build parameters")        
-        return False
+            return False
 
     logging.info(f"Build url: {build.url}")
     
