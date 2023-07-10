@@ -224,12 +224,7 @@ def create_review_comment(
 
 
 def keep_logs(build, auth, enabled=True):
-    if build.api_json()['keepLog'] == enabled:
-        return
-    response = requests.post(url=build.url + "toggleLogKeep", auth=auth)
-    if not response.ok:
-        raise Exception(f"Post request returned {response.status_code}")
-
+    return
 
 def getPullRequest(githubApi):
     github_event = getGithubEvent()
@@ -338,12 +333,25 @@ def get_ticket_priority(pr, cbAuth):
 
 
 def is_build_for_this_pr(build):
-    for param in build.get_parameters():
-        if param.name == 'CODEBEAMER':
-            github_event = getGithubEvent()
-            return param.value == '{0}#{1}'.format(github_event['pull_request']['head']['repo']['clone_url'], github_event['pull_request']['head']['ref'])
-    return False
+    param = find_params(build, 'CODEBEAMER')
+    if not param:
+        logging.info("CODEBEAMER parameter cannot be found in build parameters")
+        return False
 
+    logging.info(f"Build url: {build.url}")
+    
+    github_event = getGithubEvent()
+    clone_url = github_event['pull_request']['head']['repo']['clone_url']
+    ref = github_event['pull_request']['head']['ref']
+    value = param.value            
+    logging.info(f"Clone url {clone_url}, ref: {ref}, Param value: {value}")
+    return value == '{0}#{1}'.format(clone_url, ref)
+
+def find_params(build, param_name):
+    for param in build.get_parameters():
+        if param.name == param_name:
+            return param
+    return None
 
 def get_missing_commits_from_upstream(github, repo_name, dest_user, dest_branch, source_branch):
     repository = github.get_repo(repo_name)
