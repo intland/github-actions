@@ -66,6 +66,11 @@ class JenkinsWrapper:
                     q_obj.cancel()
         return True
 
+    def is_build_running(self, build):
+        if build.api_json()['result'] not in ['UNSTABLE', 'ABORTED', 'SUCCESS', 'FAILURE']:
+            return True
+        return False
+
     def stop_and_remove(self, job_name):
         job = self._get_job(job_name)
         if not job:
@@ -80,16 +85,17 @@ class JenkinsWrapper:
         has_build_stopped = False
         for build in builds:
             build = self._modify_url(build)
-            if is_build_for_this_pr(build):
-                try:
-                    keep_logs(build, self.auth, False)
-                except Exception as e:
-                    logging.warn(f"Keep logs cannot be changed on this build:\n{e}")
-                if self._is_running_or_pending(build):
-                    logging.info(f"Build of {job_name} job will be stopped and removed")
-                    self.remove_from_queue(job_name)
-                    build.stop()
-                    has_build_stopped = True
+            if self.is_build_running(build):
+                if is_build_for_this_pr(build):
+                    try:
+                        keep_logs(build, self.auth, False)
+                    except Exception as e:
+                        logging.warn(f"Keep logs cannot be changed on this build:\n{e}")
+                    if self._is_running_or_pending(build):
+                        logging.info(f"Build of {job_name} job will be stopped and removed")
+                        self.remove_from_queue(job_name)
+                        build.stop()
+                        has_build_stopped = True
 
         return has_build_stopped
 
