@@ -141,18 +141,28 @@ def get_component_path_mappings(files):
 
 def create_comments_from_issues(github_api, access_token, commit_sha, issues):
     is_any_comment_created = False
-    for issue in issues:
+
+    logging.info(f'Number of issues: {len(issues)}')
+
+    pr = getPullRequest(github_api)
+
+    for i, issue in enumerate(issues):
         content = format_content(list(DNS.keys())[0], issue)
-        is_successful = create_review_comment(
-            github_api=github_api,
-            auth=access_token,
-            commit_sha=commit_sha,
-            content=content,
-            path=issue['file'],
-            line=issue['endLine'],
-            start_line=issue['startLine'] if issue['startLine'] != issue['endLine'] else None
-        )
-        if is_successful:
+        
+        if i <= 10:
+            is_successful = create_review_comment(
+                pr_url=pr.url,
+                auth=access_token,
+                commit_sha=commit_sha,
+                content=content,
+                path=issue['file'],
+                line=issue['endLine'],
+                start_line=issue['startLine'] if issue['startLine'] != issue['endLine'] else None
+            )
+            if is_successful:
+                is_any_comment_created = True
+        else:
+            logging.info(f'Issue: {content}')
             is_any_comment_created = True
 
     return is_any_comment_created

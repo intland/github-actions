@@ -187,7 +187,7 @@ def delete_review_comments(github_api, user_name):
 
 
 def create_review_comment(
-    github_api,
+    pr_url,
     auth,
     commit_sha,
     content,
@@ -196,7 +196,6 @@ def create_review_comment(
     start_line=None,
     api_version='2022-11-28'
 ):
-    pr = getPullRequest(github_api)
     headers = {
         "Accept": "application/vnd.github+json",
         "Authorization": f"Bearer {auth}",
@@ -215,7 +214,7 @@ def create_review_comment(
 
     try:
         r = requests.post(
-            url=f"{pr.url}/comments",
+            url=f"{pr_url}/comments",
             headers=headers,
             data=json.dumps(payload)
         )
