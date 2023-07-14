@@ -25,7 +25,7 @@ inputs:
   interval:
     description: "How frequently in seconds to query Sonar api"
     required: false
-    default: "5"
+    default: "15"
 runs:
   using: "docker"
   image: "../sonar.Dockerfile"
