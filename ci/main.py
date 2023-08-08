@@ -83,7 +83,7 @@ def main():
         issue_comment(g, metadata_id, body, jenkins.keep_logs_metadata(build))
         raise Exception("Error fetching build details")
 
-    issue_comment(g, metadata_id, f"{body}\n\n{buildResultMessage(build.get_test_report(), public_build_url)}", jenkins.keep_logs_metadata(build))
+    issue_comment(g, metadata_id, f"{body}\n\n{buildResultMessage(build.get_test_report(), public_build_url, result)}", jenkins.keep_logs_metadata(build))
 
     if result in ('FAILURE', 'ABORTED'):
         raise Exception(result)
@@ -99,8 +99,10 @@ def convertToJson(parameters):
     return {}
 
 
-def buildResultMessage(test_reports, build_url):
-    if test_reports is None:
+def buildResultMessage(test_reports, build_url, result):
+    if result == "FAILURE" or result == "UNSTABLE":
+        return "\n**Jenkins job FAILED, please check the run**"
+    elif test_reports is None:
         return "\n_No test were ran_"
     else:
         result = retry(get_failed_tests, 60, 10)(test_reports, build_url)
