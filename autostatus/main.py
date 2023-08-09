@@ -30,7 +30,8 @@ def main():
         if resolvedStatus:
             retry(updateStatus, 30, 10)(trackerItemId, resolvedStatus, auth)
         else:
-            logging.warning(f"Status cannot be resolved for #{trackerItemId} item by '{status}'")    
+            logging.warning(f"Status cannot be resolved for #{trackerItemId} item by '{status}'")
+
 
 def updateStatus(tracker_item_id, status, auth):
     id = status["id"]
@@ -41,13 +42,13 @@ def updateStatus(tracker_item_id, status, auth):
             "fieldId": 7,
             "name": "Status",
             "type": "ChoiceFieldValue",
-            "values": [{ "id": id, "name": name, "type": "ChoiceOptionReference" }]
+            "values": [{"id": id, "name": name, "type": "ChoiceOptionReference"}]
         }]}
     updateStatus = f"https://codebeamer.com/cb/api/v3/items/{tracker_item_id}/fields?quietMode=false"
 
     try:
         logging.info(f"Fetching information from: {updateStatus}")
-        response = requests.put(url=updateStatus, auth=auth, headers={'accept':'application/json', 'Content-Type':'application/json'}, json=data)
+        response = requests.put(url=updateStatus, auth=auth, headers={'accept': 'application/json', 'Content-Type': 'application/json'}, json=data)
         logging.info(f"Response: {response.text}")
         if response.status_code == 200:
             logging.warning(f"Ticket({id}) status has been changed to: {name}")
@@ -57,16 +58,18 @@ def updateStatus(tracker_item_id, status, auth):
             f"Ticket({id}) status cannot be changed to: {name}. Exception: {e}"
         )
 
+
 def getStatus(id, status, auth):
     itemStatuses = f"https://codebeamer.com/cb/api/v3/items/{id}/fields/7/options?page=1&pageSize=100"
     logging.info(f"Fetching information from: {itemStatuses}")
-    response = requests.get(url=itemStatuses, auth=auth, headers={'accept':'application/json', 'Content-Type':'application/json'})
+    response = requests.get(url=itemStatuses, auth=auth, headers={'accept': 'application/json', 'Content-Type': 'application/json'})
     if response.status_code == 200:
         for reference in response.json()['references']:
             if (reference["name"] == status):
-                return { "name" : reference["name"], "id" : reference["id"] }
+                return {"name": reference["name"], "id": reference["id"]}
 
     return None
+
 
 if __name__ == "__main__":
     main()
