@@ -100,10 +100,10 @@ def convertToJson(parameters):
 
 
 def buildResultMessage(test_reports, build_url, result):
-    if result == "FAILURE" or result == "UNSTABLE":
+    if (result == "FAILURE" or result == "UNSTABLE") and test_reports is None:
         return "\n**Jenkins job FAILED, please check the run**"
     elif test_reports is None:
-        return "\n_No test were ran_"
+        return ""
     else:
         result = retry(get_failed_tests, 60, 10)(test_reports, build_url)
         failed_tests = result if result else ""
