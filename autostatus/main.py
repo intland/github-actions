@@ -21,7 +21,9 @@ def main():
 
     g = Github(access_token)
     pr = getPullRequest(g)
-
+    if pr.draft:
+        logging.debug("PR is in draft state, exiting.")
+        return
     auth = (codebeamer_user, codebeamer_password)
 
     trackerItemIds = collectIds(pr)
