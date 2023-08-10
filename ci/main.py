@@ -26,7 +26,6 @@ def main():
     keep_build_for_ever = os.environ.get('INPUT_KEEP_BUILD', 'true')
 
     # Preset
-    job_query_timeout = 600
     job_query_interval = 10
     metadata_id = f"jenkins-{job_name}"
 
@@ -75,7 +74,7 @@ def main():
     body = f'### [{display_job_name} - Build]({public_build_url}) status returned **{result}**.'
 
     try:
-        duration = retry(waitForBuildExecution, job_query_timeout, job_query_interval)(build)
+        duration = retry(waitForBuildExecution, timeout, job_query_interval)(build)
         body += '\n{display_job_name} - Build ran _{build_time}_'.format(display_job_name=display_job_name, build_time=convertMillisToHumanReadable(duration))
     except Exception as e:
         logging.info("Error fetching build details")
