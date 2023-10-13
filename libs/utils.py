@@ -1,4 +1,5 @@
 import json
+import xml.dom.minidom
 import logging
 import os
 import re
@@ -14,6 +15,7 @@ from api4jenkins import Jenkins
 class JenkinsWrapper:
     def __init__(self, url, auth):
         self.url = url
+        self.queue_endpoint = "/queue/api/xml"
         self.auth = auth
         self.jenkins = Jenkins(url, auth=auth)
 
@@ -53,18 +55,53 @@ class JenkinsWrapper:
             logging.info('Successfully connected to Jenkins.')
         except Exception as e:
             raise Exception('Could not connect to Jenkins.') from e
+        
+    def stop_running_builds(self, job_url, job_name, pr_url):
+        job              = self._get_job(job_name)
+        tree_string      = f"tree=builds[result,number,actions[parameters[name,value]]]"
+        xpath_string     = f"xpath=//build[not(result)][action[parameter[name[contains(text(),%27PR_LINK%27)]][value[contains(text(),%27{pr_url}%27)]]]]//number&wrapper=root"
+        endpoint_to_call = f"{job_url}api/xml?{tree_string}&{xpath_string}"
+        logging.info(f"Endpoint: {endpoint_to_call}")
 
-    def remove_from_queue(self, job_name):
-        logging.info("Checking all queue items:")
-        for queue_item in self.jenkins.queue.api_json()['items']:
-            name = queue_item.get('task').get('name')
-            logging.info(f"Queue item name is {name}")
-            if name == job_name:
-                q_obj = self.jenkins.queue.get(queue_item['id'])
-                if is_build_for_this_pr(q_obj):
-                    logging.info(f"'{name}' will be canceled")
-                    q_obj.cancel()
-        return True
+        logging.info("Checking running builds")
+        session = requests.Session()
+        session.auth = self.auth
+        response = session.get(endpoint_to_call)
+
+        logging.info("Parsing running builds response")
+        dom = xml.dom.minidom.parseString(response.text)
+        if dom.getElementsByTagName('number'):
+            for build_number in dom.getElementsByTagName('number'):
+                parsed_build_number = build_number.firstChild.nodeValue
+                logging.info(f"Stopping build: {parsed_build_number}")
+                build_to_stop = job.get_build(parsed_build_number)
+                build_to_stop = self._modify_url(build_to_stop)
+                build_to_stop.stop()
+                sleep(3)
+            return True
+        else:
+            logging.info("No running builds for job")
+            return False
+
+    def remove_from_queue(self, job_original_url, pr_url):
+        xpath_string     = f"xpath=//item[action[parameter[name[contains(text(),%27PR_LINK%27)]][value[contains(text(),%27{pr_url}%27)]]]][task[url[contains(text(),%27{job_original_url}%27)]]]//id&wrapper=root"
+        endpoint_to_call = f"{self.url}{self.queue_endpoint}?{xpath_string}"
+        logging.info(f"Endpoint: {endpoint_to_call}")
+
+        logging.info("Checking queued items")
+        session = requests.Session()
+        session.auth = self.auth
+        response = session.get(endpoint_to_call)
+
+        logging.info("Parsing queue endpoint response")
+        dom = xml.dom.minidom.parseString(response.text)
+        if dom.getElementsByTagName('id'):
+            for item_id in dom.getElementsByTagName('id'):
+                parsed_item_id = item_id.firstChild.nodeValue
+                logging.info(f"Removing item: {parsed_item_id} from queue ")
+                q_obj = self.jenkins.queue.get(parsed_item_id)
+                q_obj.cancel()
+                sleep(5)
 
     def is_build_running(self, build):
         if build.api_json()['result'] not in ['UNSTABLE', 'ABORTED', 'SUCCESS', 'FAILURE']:
@@ -72,30 +109,22 @@ class JenkinsWrapper:
         return False
 
     def stop_and_remove(self, job_name):
+        logging.info(f"Jenkins job name: {job_name}")
+        original_job_url = self.jenkins.get_job(job_name).url
+        modified_job_url = self._get_job(job_name).url
         job = self._get_job(job_name)
         if not job:
             logging.info(f"Job is not found by name: {job_name}")
             return False
+        
+        github_event = getGithubEvent()
+        pull_request_url = github_event['pull_request']['_links']['html']['href']
+        logging.info(f"PR url is {pull_request_url}")
 
-        builds = job.iter_builds()
-        if not builds:
-            logging.info("No builds for job")
-            return False
+        self.remove_from_queue(original_job_url, pull_request_url)
 
         has_build_stopped = False
-        for build in builds:
-            build = self._modify_url(build)
-            if self.is_build_running(build):
-                if is_build_for_this_pr(build):
-                    try:
-                        keep_logs(build, self.auth, False)
-                    except Exception as e:
-                        logging.warn(f"Keep logs cannot be changed on this build:\n{e}")
-                    if self._is_running_or_pending(build):
-                        logging.info(f"Build of {job_name} job will be stopped and removed")
-                        self.remove_from_queue(job_name)
-                        build.stop()
-                        has_build_stopped = True
+        has_build_stopped = self.stop_running_builds(modified_job_url, job_name, pull_request_url)
 
         return has_build_stopped
 
@@ -335,25 +364,6 @@ def get_ticket_priority(pr, cbAuth):
     if priority:
         return priority.get("name")
     return None
-
-
-def is_build_for_this_pr(build):
-    param = find_params(build, 'CODEBEAMER')
-    if not param:
-        logging.info("CODEBEAMER parameter cannot be found in build parameters")
-        param = find_params(build, 'CODEBEAMER_REPOSITORY')
-        if not param:
-            logging.info("CODEBEAMER_REPOSITORY parameter cannot be found in build parameters")        
-            return False
-
-    logging.info(f"Build url: {build.url}")
-    
-    github_event = getGithubEvent()
-    clone_url = github_event['pull_request']['head']['repo']['clone_url']
-    ref = github_event['pull_request']['head']['ref']
-    value = param.value            
-    logging.info(f"Clone url {clone_url}, ref: {ref}, Param value: {value}")
-    return value == '{0}#{1}'.format(clone_url, ref)
 
 def find_params(build, param_name):
     for param in build.get_parameters():
