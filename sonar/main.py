@@ -113,7 +113,8 @@ def search_in_sonar_issues(url, api_token, mapping, branch, types, severities, i
     logging.info(f"Getting issues with type: {types} and severities: {severities}")
     issues = []
     for component, path_prefix in mapping.items():
-        project_issues = requests.get(
+        print(f"Getting issues for {component}")
+        response = requests.get(
             f'{url}/api/issues/search',
             params={
                 'componentKeys': component,
@@ -125,7 +126,9 @@ def search_in_sonar_issues(url, api_token, mapping, branch, types, severities, i
             auth=(api_token,''),
             headers=headers,
             verify=False
-        ).json()['issues']
+        ).json()
+        print(response)
+        project_issues = response['issues']
         issues = issues + format_issues(project_issues, path_prefix)
     return issues
 
