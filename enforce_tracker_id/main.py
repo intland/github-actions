@@ -23,7 +23,7 @@ def main():
         logging.info("Converting to draft")
         pr.create_issue_comment('>_Please define a tracker ID in your PR\'s title_')
         logging.info(gql.convert_to_draft(gql.get_pullRequest_id(*pr.base.repo.full_name.split("/"), pr.number)))
-        if abort_pr is 'True':
+        if abort_pr.lower() == 'true':
             raise Exception("Task ID is needed, marking the check failed")
 
 
