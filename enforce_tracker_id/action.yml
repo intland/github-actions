@@ -5,6 +5,10 @@ inputs:
   access_token:
     description: "GitHub token"
     required: true
+  abort_pr:
+    description: "Marks check to failed"
+    required: false
+    default: "False"
 runs:
   using: "docker"
   image: "../enforce_tracker_id.Dockerfile"
