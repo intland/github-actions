@@ -186,7 +186,8 @@ def format_issues(issues, path_prefix):
                     shallow_copy = new_issue.copy()
                     shallow_copy['startLine'] = location['textRange']['startLine']
                     shallow_copy['endLine'] = location['textRange']['endLine']
-                    shallow_copy['sub_message'] = location['msg']
+                    if 'msg' in location:
+                        shallow_copy['sub_message'] = location['msg']
                     shallow_copy['file'] = f"{path_prefix}{location['component'].split(':')[-1]}"
                     formatted_issues.append(shallow_copy)
         else:
