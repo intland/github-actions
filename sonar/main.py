@@ -143,16 +143,15 @@ def get_component_path_mappings(files):
     return mapping
 
 def create_comments_from_issues(github_api, access_token, commit_sha, issues):
-    is_any_comment_created = False
-
     logging.info(f'Number of issues: {len(issues)}')
 
     pr = getPullRequest(github_api)
 
-    for i, issue in enumerate(issues):
+    number_of_comments = 0
+    for issue in issues:
         content = format_content(list(DNS.keys())[0], issue)
         
-        if i <= 10:
+        if number_of_comments < 10:
             is_successful = create_review_comment(
                 pr_url=pr.url,
                 auth=access_token,
@@ -163,12 +162,13 @@ def create_comments_from_issues(github_api, access_token, commit_sha, issues):
                 start_line=issue['startLine'] if issue['startLine'] != issue['endLine'] else None
             )
             if is_successful:
-                is_any_comment_created = True
+                number_of_comments += 1
+            else:
+                logging.info(f'Issue: {content}')
         else:
             logging.info(f'Issue: {content}')
-            is_any_comment_created = True
 
-    return is_any_comment_created
+    return number_of_comments > 0
 
 def format_issues(issues, path_prefix):
     formatted_issues = []
