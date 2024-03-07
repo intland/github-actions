@@ -148,10 +148,10 @@ def create_comments_from_issues(github_api, access_token, commit_sha, issues):
     pr = getPullRequest(github_api)
 
     number_of_comments = 0
-    for issue in issues:
+    for i, issue in enumerate(issues):
         content = format_content(list(DNS.keys())[0], issue)
         
-        if number_of_comments < 10:
+        if i < 10:
             is_successful = create_review_comment(
                 pr_url=pr.url,
                 auth=access_token,
