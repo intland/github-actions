@@ -1,0 +1,19 @@
+name: "Jenkins-Action"
+description: "Gather Test Automation Module tags for cypress run"
+author: "Daniel Mathe"
+inputs:
+  access_token:
+    description: "GitHub token"
+    required: true
+  codebeamer_user:
+    description: "Codebeamer user to access API"
+    required: true
+  codebeamer_password:
+    description: "Codebeamer password to acces API"
+    required: true
+outputs:
+  cypressTagList:
+    description: "A list containing the necessary cypress tags"
+runs:
+  using: "docker"
+  image: "../get_cypress_tags.Dockerfile"
