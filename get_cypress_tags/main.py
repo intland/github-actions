@@ -22,16 +22,21 @@ def main():
     g = Github(access_token)
     pr = getPullRequest(g)
 
+    # Tags found in reference field
     tagList = getCypressTags(pr, auth)
-    tags = ""
-    #Create a comma separated 'list' from tags
+    
+    # Always required tags
+    tags_all = "@cpViewsQG, @cpWorkItemsQG, @cpRegProjectReportingQG, @cpReviewHubQG, @cpTestManagementQG"
+    
+    # Add tags found in reference field
     for tag in tagList:
-        tagName = tag["name"]
-        tags += f'{tagName},'
-    print(tags)
+        if tag not in tags_all:
+            tags_all += f', {tag}'
+    
+    print(tags_all)
     
     with open(os.environ['GITHUB_OUTPUT'], 'a') as fh:
-            print(f'cypressTagList={tags}', file=fh)
+        print(f'cypressTagList={tags_all}', file=fh)
 
 def getCypressTags(pr, cbAuth):
     ids = collectIds(pr)
@@ -41,7 +46,7 @@ def getCypressTags(pr, cbAuth):
         module_id = module["id"]
         tags = getCustomFieldItems(module_id, cbAuth, "Cypress tags")
         for tag in tags:
-            tagList.append(tag)
+            tagList.append(tag["name"])
     return tagList
 
 def getCustomFieldItems(id, cbAuth, fieldName):
