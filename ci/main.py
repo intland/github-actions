@@ -58,7 +58,7 @@ def main():
     if access_token:
         issue_comment(g, metadata_id, f'{display_job_name} - Build started [here]({public_build_url})', jenkins.keep_logs_metadata(build))
 
-    result = retry(wait_for_build, 60, 10)(build, public_build_url, timeout, interval)
+    result = retry(wait_for_build, 28800, 120)(build, public_build_url, timeout, interval)
 
     if not access_token:
         logging.info("No comment.")
