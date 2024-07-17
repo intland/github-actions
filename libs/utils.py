@@ -169,16 +169,17 @@ def wait_for_build(build, build_url, timeout, interval):
     sleep(interval)
     while time() - t0 < timeout:
         try:
-            result = build.result
-            if result == 'SUCCESS':
-                logging.info(f'Build successful')
-                return result
-            if result == 'UNSTABLE':
-                logging.info(f'Build unstable')
-                return result
-            if result in ('FAILURE', 'ABORTED'):
-                logging.info(f'Build status returned "{result}".Build has failed ☹️.')
-                return result
+            if not build.building:
+                result = build.result
+                if result == 'SUCCESS':
+                    logging.info(f'Build successful')
+                    return result
+                if result == 'UNSTABLE':
+                    logging.info(f'Build unstable')
+                    return result
+                if result in ('FAILURE', 'ABORTED'):
+                    logging.info(f'Build status returned "{result}".Build has failed ☹️.')
+                    return result
             logging.info(f'Build not finished yet. Waiting {interval} seconds. {build_url}')
         finally:
             sleep(interval)
