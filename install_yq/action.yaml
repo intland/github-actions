@@ -1,0 +1,24 @@
+name: "Setup mikefarah/yq"
+description: "Install mikefarah/yq cli for workflow runs"
+author: "Daniel Mathe"
+inputs:
+  version:
+    description: "Version of yq cli to be installed"
+    required: false
+    default: "v4.44.2"
+  binary:
+    description: "The name of the binary of yq to be used"
+    required: false
+    default: "yq_linux_amd64"
+runs:
+  using: "composite"
+  steps:
+    - name: Install mikefarah/yq
+      shell: bash
+      run: |
+        set -eu
+        wget https://github.com/mikefarah/yq/releases/download/${{ inputs.version }}/${{ inputs.binary }}.tar.gz -O - | tar xz
+        mkdir -p $GITHUB_WORKSPACE/bin
+        mv ${{ inputs.binary }} $GITHUB_WORKSPACE/bin/yq
+        chmod +x $GITHUB_WORKSPACE/bin/yq
+        echo $GITHUB_WORKSPACE/bin >> $GITHUB_PATH
