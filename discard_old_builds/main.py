@@ -12,7 +12,7 @@ logging.basicConfig(format='JENKINS_ACTION: %(message)s', level=log_level)
 
 def main():
     # Required
-    url = os.environ["INPUT_URL"]
+    url = "https://jenkins.rd2.thingworx.io/jenkins" # os.environ["INPUT_URL"]
     username = os.environ.get("INPUT_USERNAME")
     api_token = os.environ.get("INPUT_API_TOKEN")
     job_names = os.environ["INPUT_JOB_NAMES"]
