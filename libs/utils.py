@@ -30,7 +30,7 @@ class JenkinsWrapper:
     def _modify_url(self, object_to_modify):
         if (object_to_modify.url.split('/')[2] == 'jenkins.rd2.thingworx.io'):
             object_to_modify.url = object_to_modify.url.replace(
-                'jenkins.rd2.thingworx.io', 'bitbucket-jenkins.rd2.thingworx.io'
+                'jenkins.rd2.thingworx.io', 'jenkins.rd2.thingworx.io'
             )
         return object_to_modify
 
