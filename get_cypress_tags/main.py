@@ -41,6 +41,8 @@ def main():
 def getCypressTags(pr, cbAuth):
     ids = collectIds(pr)
     tagList = []
+    if not ids:
+        return tagList
     modules = getCustomFieldItems(ids[-1], cbAuth, "Test Automation Module")
     for module in modules:
         module_id = module["id"]
