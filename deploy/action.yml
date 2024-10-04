@@ -1,0 +1,16 @@
+name: "Deploy"
+description: "Deploy a client / app to AWS"
+author: "Balint Kokai"
+inputs:
+  username:
+    description: "Jenkins username"
+    required: true
+  api_token:
+    description: "Jenkins API token"
+    required: true
+  changes:
+    description: "The changes in the PR"
+    required: true
+runs:
+  using: "docker"
+  image: "../deploy.Dockerfile"
