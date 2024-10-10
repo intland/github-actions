@@ -4,6 +4,7 @@ import os
 from api4jenkins import Jenkins
 from github import Github
 from libs.utils import *
+import urllib.parse
 
 log_level = os.environ.get('INPUT_LOG_LEVEL', 'INFO')
 logging.basicConfig(format='JENKINS_ACTION: %(message)s', level=log_level)
@@ -132,7 +133,9 @@ def get_failed_tests(test_reports, build_url):
                     splitted_class_name = case.class_name.split(".")
                     class_prefix = ".".join(splitted_class_name[0:-1])
                     class_name = splitted_class_name[-1]
-                    failed_tests += f"- [{case.class_name}.{case.name}]({build_url}testReport/junit/{class_prefix}/{class_name}/{case.name})\n"
+                    path = urllib.parse.quote(f"{class_prefix}/{class_name}/{case.name}")
+                    link = f"{build_url}testReport/junit/{path}"
+                    failed_tests += f"- [{case.class_name}.{case.name}]({link})\n"
         return failed_tests
     except Exception as e:
         logging.warning(f"Cannot get link for broken tests: \n {e}")   
