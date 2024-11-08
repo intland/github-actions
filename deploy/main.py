@@ -4,6 +4,8 @@ import logging
 import os
 from dataclasses import dataclass
 from api4jenkins import Jenkins
+from github import Github
+from libs.utils import issue_comment
 
 
 logging.basicConfig(format='JENKINS_ACTION: %(message)s', level='INFO')
@@ -21,9 +23,10 @@ class Deployment:
     operation: str
 
 
-def main(jenkins, changes):
+def main(git_hub, jenkins, changes):
     for deployment in collect_deployments(changes):
         start_build(
+            git_hub,
             jenkins,
             deployment.resource_name,
             deployment.resource_kind,
@@ -99,21 +102,27 @@ def determine_operation(change, deleted) -> str:
     ) else 'CREATE_OR_UPDATE'
 
 
-def start_build(jenkins, resource_name, resource_kind, delete):
+def start_build(git_hub, jenkins, resource_name, resource_kind, delete):
     job = jenkins.get_job('auto-deployment')
-    job.build(**dict(
+    queue_item = job.build(**dict(
         RESOURCE_NAME=resource_name,
         RESOURCE_KIND=resource_kind,
         DELETE=delete,
         DRY_RUN=False
     ))
+    build = queue_item.get_build()
+    url = build.url
+    issue_comment(git_hub, 'auto-deployment-start', f"Link to the deployment build: {url}")
 
 
 if __name__ == '__main__':
+    access_token = os.environ.get('INPUT_ACCESS_TOKEN')
+    git_hub = Github(access_token)
+
     username = os.environ.get('INPUT_USERNAME')
     api_token = os.environ.get('INPUT_API_TOKEN')
     jenkins = Jenkins('https://ci.intland.de', auth=(username, api_token))
 
     changes = json.loads(os.environ.get('INPUT_CHANGES'))
 
-    main(jenkins, changes)
+    main(git_hub, jenkins, changes)
