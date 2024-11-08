@@ -6,6 +6,7 @@ from dataclasses import dataclass
 from api4jenkins import Jenkins
 from github import Github
 from libs.utils import issue_comment
+from time import sleep
 
 
 logging.basicConfig(format='JENKINS_ACTION: %(message)s', level='INFO')
@@ -111,8 +112,18 @@ def start_build(git_hub, jenkins, resource_name, resource_kind, delete):
         DRY_RUN=False
     ))
     build = queue_item.get_build()
-    url = build.url
-    issue_comment(git_hub, 'auto-deployment-start', f"Link to the deployment build: {url}")
+
+    retries = 0
+    while not build and retries < 12:
+        sleep(5)
+        retries += 1
+        build = queue_item.get_build()
+
+    if build:
+        url = build.url
+        issue_comment(git_hub, 'auto-deployment-start', f"Link to the deployment build: {url}")
+    else:
+        logging.warning('The build did not start on time, cannot create the comment with a link to it.')
 
 
 if __name__ == '__main__':
