@@ -8,6 +8,9 @@ inputs:
   api_token:
     description: "Jenkins API token"
     required: true
+  access_token:
+    description: "GitHub token"
+    required: true
   changes:
     description: "The changes in the PR"
     required: true
