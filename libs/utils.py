@@ -314,6 +314,7 @@ def getAllComments(pullRequest):
     commentsList = []
     for comment in pullRequest.as_issue().get_comments():
         commentsList.append(comment)
+    logging.info(f"All comments fetched")
     return commentsList
 
 
