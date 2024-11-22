@@ -44,6 +44,9 @@ inputs:
     description: "How frequently in seconds to query Jenkins for build status"
     required: false
     default: "5"
+  job_type_identifier:
+    description: "Used to differentiate comment metadata_ids in case of unit tests"
+    required: false
 outputs:
   build_url:
     description: "Jenkins build URL"

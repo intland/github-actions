@@ -25,12 +25,14 @@ def main():
     access_token = os.environ.get("INPUT_ACCESS_TOKEN")
     display_job_name = os.environ.get("INPUT_DISPLAY_JOB_NAME")
     keep_build_for_ever = os.environ.get('INPUT_KEEP_BUILD', 'true')
+    job_type_identifier = os.environ.get('INPUT_JOB_TYPE_IDENTIFIER')
 
     # Preset
     job_query_timeout = 600
     job_query_interval = 10
     metadata_id = f"jenkins-{job_name}"
-
+    metadata_id += f"-{job_type_identifier}" if job_type_identifier else ""
+    
     if username and api_token:
         auth = (username, api_token)
     else:
