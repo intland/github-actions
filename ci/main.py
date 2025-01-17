@@ -137,7 +137,8 @@ def get_failed_tests(test_reports, build_url):
                     class_name = splitted_class_name[-1]
                     path = urlencode(f"{class_prefix}/{class_name}/{case.name}")
                     link = f"{build_url}testReport/junit/{path}"
-                    failed_tests += f"- [{case.class_name}.{case.name}]({link})\n"
+                    case_name = case.name.replace('[', r'\[').replace(']', r'\]')
+                    failed_tests += f"- [{case.class_name}.{case_name}]({link})\n"
         return failed_tests
     except Exception as e:
         logging.warning(f"Cannot get link for broken tests: \n {e}")   
@@ -150,7 +151,6 @@ def urlencode(url):
       for char in "[]()":
           encoded_url = encoded_url.replace(char, "_")
       return encoded_url
-
 
 if __name__ == "__main__":
     main()
