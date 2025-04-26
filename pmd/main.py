@@ -77,7 +77,7 @@ def main():
     files = pr.get_files()
 
     json_data = json.dumps(collectChanges(files))
-    json_bytes = json_str.encode('utf-8')
+    json_bytes = json_data.encode('utf-8')
     base64_bytes = base64.b64encode(json_bytes)
     base64_str = base64_bytes.decode('utf-8')
 
