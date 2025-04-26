@@ -3,6 +3,7 @@ import os
 import re
 import itertools
 import json
+import base64
 
 from github import Github
 
@@ -76,10 +77,12 @@ def main():
     files = pr.get_files()
 
     json_data = json.dumps(collectChanges(files))
-    escaped_json_data = json.dumps(json_data)
+    json_bytes = json_str.encode('utf-8')
+    base64_bytes = base64.b64encode(json_bytes)
+    base64_str = base64_bytes.decode('utf-8')
 
     with open(output_file, "a") as f:
-        f.write(f"changed_files={escaped_json_data}\n")
+        f.write(f"changed_files={base64_str}\n")
 
 if __name__ == '__main__':
     main()
