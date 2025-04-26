@@ -76,9 +76,10 @@ def main():
     files = pr.get_files()
 
     json_data = json.dumps(collectChanges(files))
+    escaped_json_data = json.dumps(json_data)
 
     with open(output_file, "a") as f:
-        f.write(f"changed_files={json_data}\n")
+        f.write(f"changed_files={escaped_json_data}\n")
 
 if __name__ == '__main__':
     main()
