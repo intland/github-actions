@@ -8,6 +8,7 @@ from github import Github
 
 from libs.utils import *
 
+output_file = os.environ.get('GITHUB_OUTPUT')
 log_level = os.environ.get('INPUT_LOG_LEVEL', 'INFO')
 logging.basicConfig(format='ACTION: %(message)s', level=log_level)
 
@@ -64,7 +65,7 @@ def collectChanges(pr_files):
         if len(lines) > 0:
             output_data.append({ "path": filename, "lineNumbers": lines })
 
-    return json.dumps(output_data)
+    return output_data
 
 def main():
     logging.info("Starting execution")
@@ -74,7 +75,10 @@ def main():
     pr = getPullRequest(g)
     files = pr.get_files()
 
-    print(collectChanges(files))
+    json = json.dumps(collectChanges(files))
+
+    with open(output_file, "a") as f:
+        f.write(f"changed_files={data}\n")
 
 if __name__ == '__main__':
     main()
