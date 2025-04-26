@@ -75,10 +75,10 @@ def main():
     pr = getPullRequest(g)
     files = pr.get_files()
 
-    json = json.dumps(collectChanges(files))
+    json_data = json.dumps(collectChanges(files))
 
     with open(output_file, "a") as f:
-        f.write(f"changed_files={data}\n")
+        f.write(f"changed_files={json_data}\n")
 
 if __name__ == '__main__':
     main()
