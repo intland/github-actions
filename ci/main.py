@@ -6,6 +6,7 @@ from github import Github
 from libs.utils import *
 import urllib.parse
 
+output_file = os.environ.get('GITHUB_OUTPUT')
 log_level = os.environ.get('INPUT_LOG_LEVEL', 'INFO')
 logging.basicConfig(format='JENKINS_ACTION: %(message)s', level=log_level)
 
@@ -58,6 +59,9 @@ def main():
     public_build_url =  jenkins.get_public_url(build.url)
     logging.info(f"Build URL: {public_build_url}")
 
+    with open(output_file, "a") as f:
+        f.write(f"build_url={public_build_url}\n")
+        
     if access_token:
         issue_comment(g, metadata_id, f'{display_job_name} - Build started [here]({public_build_url})', jenkins.keep_logs_metadata(build))
 
