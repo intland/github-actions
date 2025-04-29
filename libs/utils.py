@@ -38,12 +38,12 @@ class JenkinsWrapper:
         return self._modify_url(self.jenkins.get_job(name))
 
     def get_artifact(self, job_name, build_id, artifact_name):
-        job = self._modify_url(self.jenkins.get_job(name))
+        job = self._modify_url(self.jenkins.get_job(job_name))
         build = self._modify_url(job.get_build(build_number))
 
         artifacts = build.get_artifacts()
         for artifact in artifacts:
-            if artifact.name == name:
+            if artifact.name == artifact_name:
                 artifact.url = artifact.url.replace("jenkins/jenkins", "jenkins")
                 self._modify_url(artifact)
                 return artifact
