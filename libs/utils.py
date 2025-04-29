@@ -34,7 +34,7 @@ class JenkinsWrapper:
             )
         return object_to_modify
 
-    def _get_job(self, name):
+    def get_job(self, name):
         return self._modify_url(self.jenkins.get_job(name))
 
     def _is_running_or_pending(self, build):
@@ -57,7 +57,7 @@ class JenkinsWrapper:
             raise Exception('Could not connect to Jenkins.') from e
         
     def stop_running_builds(self, job_url, job_name, pr_url):
-        job              = self._get_job(job_name)
+        job              = self.get_job(job_name)
         tree_string      = f"tree=builds[result,number,actions[parameters[name,value]]]"
         xpath_string     = f"xpath=//build[not(result)][action[parameter[name[contains(text(),%27PR_LINK%27)]][value[contains(text(),%27{pr_url}%27)]]]]//number&wrapper=root"
         endpoint_to_call = f"{job_url}api/xml?{tree_string}&{xpath_string}"
@@ -111,8 +111,8 @@ class JenkinsWrapper:
     def stop_and_remove(self, job_name):
         logging.info(f"Jenkins job name: {job_name}")
         original_job_url = self.jenkins.get_job(job_name).url
-        modified_job_url = self._get_job(job_name).url
-        job = self._get_job(job_name)
+        modified_job_url = self.get_job(job_name).url
+        job = self.get_job(job_name)
         if not job:
             logging.info(f"Job is not found by name: {job_name}")
             return False
@@ -129,7 +129,7 @@ class JenkinsWrapper:
         return has_build_stopped
 
     def build_job(self, job_name, parameters):
-        job = self._get_job(job_name)
+        job = self.get_job(job_name)
         return job.build(**parameters)
 
     def wait_for_build(self, queue_item):
