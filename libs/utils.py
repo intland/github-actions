@@ -203,8 +203,8 @@ def issue_comment(githubApi, metadata_id, content, metadata={}):
         logging.info("Comment is deleted")
         comment.delete()
 
+    retry(pr.create_issue_comment, 60, 5)(content)
     logging.info("New comment is created")
-    pr.create_issue_comment(content)
 
 
 def delete_review_comments(github_api, user_name):
