@@ -1,0 +1,32 @@
+name: "Jenkins-Action"
+description: "Report PMD issues"
+author: "Sandor Zelei"
+inputs:
+  url:
+    description: "Jenkins URL including http/https protocol"
+    required: true
+  job_name:
+    description: "Jenkins job name to build"
+    required: true
+  build_number:
+    description: "Jenkins build number"
+    required: true
+  username:
+    description: "Jenkins username"
+    required: true
+  api_token:
+    description: "Jenkins API token"
+    required: true
+  pr_link:
+    description: "Link to the PR"
+    required: true
+  access_token:
+    description: "GitHub token"
+    required: false
+  display_job_name:
+    description: "Job name used for link"
+    required: false
+    default: 'PMD'
+runs:
+  using: "docker"
+  image: "../pmd_report.Dockerfile"

@@ -48,8 +48,8 @@ inputs:
     description: "Used to differentiate comment metadata_ids in case of unit tests"
     required: false
 outputs:
-  build_url:
-    description: "Jenkins build URL"
+  build_number:
+    description: "Jenkins build number"
 runs:
   using: "docker"
   image: "../ci.Dockerfile"
