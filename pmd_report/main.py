@@ -42,10 +42,7 @@ def main():
     jenkins = JenkinsWrapper(url, auth=auth)
     retry(jenkins.connect_to_jenkins, 60, 20)
 
-    job = jenkins.get_job(job_name)
-    build = job.get_build(build_number)
-
-    artifact = find_artifact(build, "pmd.zip")
+    artifact = jenkins.get_artifact(job_name, build_number, "pmd.zip")
     artifact.save(artifact.name)
     
     os.makedirs(extract_directory, exist_ok=True)
@@ -127,13 +124,6 @@ def find_and_process_violations(root_dir):
                 violations = process_violation_file(file_path)
                 all_violations.extend(violations)
     return all_violations
-
-def find_artifact(build, name):
-    artifacts = build.get_artifacts()
-    for artifact in artifacts:
-        if artifact.name == name:
-            artifact.url = artifact.url.replace("jenkins/jenkins", "jenkins")
-            return artifact
 
 if __name__ == "__main__":
     main()
