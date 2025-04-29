@@ -60,7 +60,7 @@ def main():
     logging.info(f"Build URL: {public_build_url}")
 
     with open(output_file, "a") as f:
-        f.write(f"build_url={public_build_url}\n")
+        f.write(f"build_number={build.number}\n")
         
     if access_token:
         issue_comment(g, metadata_id, f'{display_job_name} - Build started [here]({public_build_url})', jenkins.keep_logs_metadata(build))
