@@ -37,7 +37,7 @@ class JenkinsWrapper:
     def get_job(self, name):
         return self._modify_url(self.jenkins.get_job(name))
 
-    def get_artifact(self, job_name, build_id, artifact_name):
+    def get_artifact(self, job_name, build_number, artifact_name):
         job = self._modify_url(self.jenkins.get_job(job_name))
         build = self._modify_url(job.get_build(build_number))
 
