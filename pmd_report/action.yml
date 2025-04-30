@@ -17,6 +17,8 @@ inputs:
   api_token:
     description: "Jenkins API token"
     required: true
+  commit_sha:
+    description: "Last commit SHA"
   pr_link:
     description: "Link to the PR"
     required: true

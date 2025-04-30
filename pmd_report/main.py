@@ -12,6 +12,9 @@ output_file = os.environ.get('GITHUB_OUTPUT')
 log_level = os.environ.get('INPUT_LOG_LEVEL', 'INFO')
 logging.basicConfig(format='JENKINS_ACTION: %(message)s', level=log_level)
 
+job_query_timeout = 600
+job_query_interval = 10
+
 def main():
     extract_directory = "extracted_pmd"
 
@@ -22,14 +25,15 @@ def main():
     username = os.environ.get("INPUT_USERNAME")
     api_token = os.environ.get("INPUT_API_TOKEN")
     access_token = os.environ.get("INPUT_ACCESS_TOKEN")
+    commit_sha = os.environ.get("INPUT_COMMIT_SHA")
 
     # Optional
     display_job_name = os.environ.get("INPUT_DISPLAY_JOB_NAME")
     job_type_identifier = os.environ.get('INPUT_JOB_TYPE_IDENTIFIER')
 
+    g = Github(access_token)
+
     # Preset
-    job_query_timeout = 600
-    job_query_interval = 10
     metadata_id = f"jenkins-{job_name}"
     metadata_id += f"-{job_type_identifier}" if job_type_identifier else ""
     
@@ -47,11 +51,43 @@ def main():
     
     os.makedirs(extract_directory, exist_ok=True)
     unzip_jenkins_artifact(artifact.name, extract_directory)
-    all_violations = find_and_process_violations(extract_directory)
-    if all_violations:
-        logging.info(f"\nFound and processed {len(all_violations)} violations:")
-        for violation in all_violations:
-            logging.info(violation)
+    violations = find_and_process_violations(extract_directory)
+
+    any_comment_submitted = retry(create_comments_from_issues, job_query_timeout, job_query_interval)(g, access_token, commit_sha, violations)
+    if any_comment_submitted:
+        issue_comment(g, "pmd-report", "### PMD Quality check\n\n FAILED", keepLogsMetadata(commit_sha))
+    else:
+        issue_comment(g, "pmd-report", "### PMD Quality check\n\n PASSED", keepLogsMetadata(commit_sha))
+
+def keepLogsMetadata(commit_sha):
+    return json.dumps([{"build": {"commit_sha": commit_sha}, "enabled": True}])
+
+def create_comments_from_issues(github_api, access_token, commit_sha, violations):
+    logging.info(f'Number of violations: {len(violations)}')
+
+    pr = getPullRequest(github_api)
+
+    number_of_comments = 0
+    for violation in violations:
+        content = format_content(violation)
+        is_successful = retry(create_review_comment, job_query_timeout, job_query_interval)(
+            pr_url=pr.url,
+            auth=access_token,
+            commit_sha=commit_sha,
+            content=content,
+            path=violation.file,
+            line=violation.lineNumber,
+            start_line=None
+        )
+        if is_successful:
+            number_of_comments += 1
+        else:
+            logging.info(f'Violation: {content}')
+
+    return number_of_comments > 0
+
+def format_content(violation):
+    return f"{violation.severity} - {violation.category}<br\>{violation.message}"
 
 class Violation:
     def __init__(self, message, file, severity, category, lineNumber):
