@@ -87,7 +87,11 @@ def create_comments_from_issues(github_api, access_token, commit_sha, violations
     return number_of_comments > 0
 
 def format_content(violation):
-    return f"{violation.severity} - {violation.category}<br\>{violation.message}"
+    return f"""**{violation.severity} - {violation.category}**
+
+**Details:**
+{violation.message}
+"""
 
 class Violation:
     def __init__(self, message, file, severity, category, lineNumber):
