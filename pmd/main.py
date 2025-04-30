@@ -21,10 +21,10 @@ def get_next_line_number(lines, start_from):
     return len(lines)
 
 def get_hunk_start(line):
-    return int(re.search(r"@@ -(\d+),(\d+) \+(\d+),(\d+) @@.*", line).group(3))
+    return int(re.search(r"@@.*\+(\d+),(\d+) @@.*", line).group(1))
 
 def get_hunk_length(line):
-    return int(re.search(r"@@ -(\d+),(\d+) \+(\d+),(\d+) @@.*", line).group(4))
+    return int(re.search(r"@@.*\+(\d+),(\d+) @@.*", line).group(2))
 
 def compute_hunk_range(lines, start, end):
     line_numbers = []
