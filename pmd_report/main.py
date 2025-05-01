@@ -66,10 +66,9 @@ def main():
                 if md5Hash == violation.md5Hash:
                     existing_violations.append(violation)
 
-
     new_violations = [v for v in violations if v not in existing_violations]
 
-    any_comment_submitted = retry(create_comments_from_issues, timeout, interval)(g, access_token, commit_sha, new_violations)
+    any_comment_submitted = create_comments_from_issues(g, access_token, commit_sha, new_violations) # retry(create_comments_from_issues, timeout, interval)(g, access_token, commit_sha, new_violations)
     if any_comment_submitted:
         issue_comment(g, "pmd-report", "### PMD Quality check\n\n FAILED", keepLogsMetadata(commit_sha))
     else:
@@ -85,8 +84,9 @@ def create_comments_from_issues(github_api, access_token, commit_sha, violations
 
     number_of_comments = 0
     for violation in violations:
-        content = format_content(violation)
-        is_successful = retry(create_review_comment, timeout, interval)(
+        content = violation.format_content()
+        #retry(create_review_comment, timeout, interval)
+        is_successful = create_review_comment(
             pr_url=pr.url,
             auth=access_token,
             commit_sha=commit_sha,
@@ -101,13 +101,6 @@ def create_comments_from_issues(github_api, access_token, commit_sha, violations
             logging.info(f'Violation: {content}')
 
     return number_of_comments > 0
-
-def format_content(violation):
-    return f"""**{violation.severity} - {violation.category}**
-
-**Details:**
-{violation.message}
-"""
 
 class Violation:
     def __init__(self, message, file, severity, category, lineNumber):
@@ -131,13 +124,13 @@ class Violation:
     def __repr__(self):
         return (f"Violation(severity='{self.severity}', category='{self.category}', file='{self.file}', lineNumber={self.lineNumber}, message='{self.message[:50]}...')")
 
-def format_content(self):
-    metadata = createMetadata(meta_data_id, self.md5Hash)
-    return f"""**{self.severity} - {self.category}**
+    def format_content(self):
+        metadata = createMetadata(meta_data_id, self.md5Hash)
+        return f"""**{self.severity} - {self.category}**
 
-**Details:**
-{self.message}
-""" + "\n" + metadata
+    **Details:**
+    {self.message}
+    """ + "\n" + metadata
 
 def process_violation_file(file_path):
     violations = []
