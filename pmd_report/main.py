@@ -13,8 +13,9 @@ output_file = os.environ.get('GITHUB_OUTPUT')
 log_level = os.environ.get('INPUT_LOG_LEVEL', 'INFO')
 logging.basicConfig(format='JENKINS_ACTION: %(message)s', level=log_level)
 
-job_query_timeout = 600
-job_query_interval = 10
+timeout = 600
+interval = 10
+
 meta_data_id = 'pmd-violation'
 
 def main():
@@ -68,7 +69,7 @@ def main():
 
     new_violations = violations.remove(existing_violations)
 
-    any_comment_submitted = retry(create_comments_from_issues, job_query_timeout, job_query_interval)(g, access_token, commit_sha, new_violations)
+    any_comment_submitted = retry(create_comments_from_issues, timeout, interval)(g, access_token, commit_sha, new_violations)
     if any_comment_submitted:
         issue_comment(g, "pmd-report", "### PMD Quality check\n\n FAILED", keepLogsMetadata(commit_sha))
     else:
@@ -85,7 +86,7 @@ def create_comments_from_issues(github_api, access_token, commit_sha, violations
     number_of_comments = 0
     for violation in violations:
         content = format_content(violation)
-        is_successful = retry(create_review_comment, job_query_timeout, job_query_interval)(
+        is_successful = retry(create_review_comment, timeout, interval)(
             pr_url=pr.url,
             auth=access_token,
             commit_sha=commit_sha,
