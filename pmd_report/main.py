@@ -7,6 +7,7 @@ import logging
 import requests
 import os
 import zipfile
+import hashlib
 
 output_file = os.environ.get('GITHUB_OUTPUT')
 log_level = os.environ.get('INPUT_LOG_LEVEL', 'INFO')
@@ -14,6 +15,7 @@ logging.basicConfig(format='JENKINS_ACTION: %(message)s', level=log_level)
 
 job_query_timeout = 600
 job_query_interval = 10
+meta_data_id = 'pmd-violation'
 
 def main():
     extract_directory = "extracted_pmd"
@@ -100,9 +102,23 @@ class Violation:
         self.severity = severity
         self.category = category
         self.lineNumber = lineNumber
+        self.md5Hash = self._compute_md5_hash()
+
+    def _compute_md5_hash(self):
+        combined_string = f"{self.message}{self.file}{self.severity}{self.category}{self.lineNumber}"
+        encoded_string = combined_string.encode('utf-8')
+        return hashlib.md5(encoded_string).hexdigest()
 
     def __repr__(self):
         return (f"Violation(severity='{self.severity}', category='{self.category}', file='{self.file}', lineNumber={self.lineNumber}, message='{self.message[:50]}...')")
+
+def format_content(self):
+    metadata = createMetadata(meta_data_id, self.md5Hash)
+    return f"""**{self.severity} - {self.category}**
+
+**Details:**
+{self.message}
+""" + "\n" + metadata
 
 def process_violation_file(file_path):
     violations = []
