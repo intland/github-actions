@@ -67,7 +67,7 @@ def main():
                     existing_violations.append(violation)
 
 
-    new_violations = violations.remove(existing_violations)
+    new_violations = [v for v in violations if v not in existing_violations]
 
     any_comment_submitted = retry(create_comments_from_issues, timeout, interval)(g, access_token, commit_sha, new_violations)
     if any_comment_submitted:
