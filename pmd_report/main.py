@@ -53,9 +53,22 @@ def main():
     
     os.makedirs(extract_directory, exist_ok=True)
     unzip_jenkins_artifact(artifact.name, extract_directory)
-    violations = find_and_process_violations(extract_directory)
 
-    any_comment_submitted = retry(create_comments_from_issues, job_query_timeout, job_query_interval)(g, access_token, commit_sha, violations)
+    violations = find_and_process_violations(extract_directory)
+    review_comments = retry(get_review_comments, timeout, interval)(g, 'github-actions[bot]', meta_data_id)
+
+    existing_violations = []
+    for review_comment in review_comments:
+        for violation in violations:
+            if review_comment.path == violation.file and review_comment.line == violation.lineNumber:
+                md5Hash = loadMetadata(meta_data_id, review_comment.body)
+                if md5Hash == violation.md5Hash:
+                    existing_violations.append(violation)
+
+
+    new_violations = violations.remove(existing_violations)
+
+    any_comment_submitted = retry(create_comments_from_issues, job_query_timeout, job_query_interval)(g, access_token, commit_sha, new_violations)
     if any_comment_submitted:
         issue_comment(g, "pmd-report", "### PMD Quality check\n\n FAILED", keepLogsMetadata(commit_sha))
     else:
@@ -108,6 +121,11 @@ class Violation:
         combined_string = f"{self.message}{self.file}{self.severity}{self.category}{self.lineNumber}"
         encoded_string = combined_string.encode('utf-8')
         return hashlib.md5(encoded_string).hexdigest()
+
+    def __eq__(self, other):
+        if isinstance(other, Violation):
+            return self.md5Hash == other.md5Hash and self.md5Hash == other.md5Hash
+        return NotImplemented
 
     def __repr__(self):
         return (f"Violation(severity='{self.severity}', category='{self.category}', file='{self.file}', lineNumber={self.lineNumber}, message='{self.message[:50]}...')")

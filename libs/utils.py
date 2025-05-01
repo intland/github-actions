@@ -217,7 +217,6 @@ def issue_comment(githubApi, metadata_id, content, metadata={}):
     logging.info("New comment is created")
     pr.create_issue_comment(content)
 
-
 def delete_review_comments(github_api, user_name):
     pr = getPullRequest(github_api)
     comments = pr.get_review_comments()
@@ -226,6 +225,19 @@ def delete_review_comments(github_api, user_name):
         if comment.user.login == user_name:
             comment.delete()
 
+def get_review_comments(github_api, user_name, id):
+    pr = getPullRequest(github_api)
+    comments = pr.get_review_comments()
+
+    collected_comments = []
+    logging.info(f"Get review comments for user: {user_name} and ID: {id}")
+    for comment in comments:
+        if comment.user.login == user_name:
+            metadata = loadMetadata(id, comment.body)
+            if metadata:
+                collected_comments.append(comment)
+    
+    return collected_comments
 
 def create_review_comment(
     pr_url,
@@ -292,12 +304,10 @@ def loadMetadata(id, comment):
     for data in re.findall('<!--(.*)-->', comment.body):
         try:
             json_data = json.loads(data)
-        except json.decoder.JSONDecodeError:
-            pass
-        else:
             if json_data['id'] == id:
                 return json_data['metadata']
-
+        except json.decoder.JSONDecodeError:
+            pass
 
 def createMetadata(id, metadata):
     if isinstance(metadata, str):
