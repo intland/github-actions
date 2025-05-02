@@ -63,21 +63,15 @@ def main():
         violations = find_and_process_violations(extract_directory)
         logging.info(f'{violations}')
 
-        review_comments = retry(get_review_comments, timeout, interval)(g, 'github-actions[bot]', meta_data_id)
+        review_comment_cache = get_review_comment_cache(g)
+        violation_cache = get_violation_cache(violations)
 
-        existing_violations = []
-        for review_comment in review_comments:
-            for violation in violations:
-                logging.info(dir(review_comment))
-                if review_comment.path == violation.file:
-                    metadata = loadMetadata(meta_data_id, review_comment.body)
-                    logging.info(f'{metadata}')
-                    logging.info(f'{metadata.md5Hash}')
-                    if metadata.md5Hash == violation.md5Hash:
-                        existing_violations.append(violation)
+        obsolite_review_comments = get_obsolite_review_comments(review_comment_cache, violation_cache)
+        logging.info(f'{obsolite_review_comments}')
 
-        new_violations = [v for v in violations if v not in existing_violations]
+        new_violations = get_new_violations(review_comment_cache, violation_cache)
         logging.info(f'{new_violations}')
+
         any_comment_submitted = create_comments_from_issues(g, access_token, commit_sha, new_violations) # retry(create_comments_from_issues, timeout, interval)(g, access_token, commit_sha, new_violations)
         if any_comment_submitted:
             issue_comment(g, "pmd-report", "### PMD Quality check\n\n FAILED", keepLogsMetadata(commit_sha))
@@ -85,6 +79,40 @@ def main():
             issue_comment(g, "pmd-report", "### PMD Quality check\n\n PASSED", keepLogsMetadata(commit_sha))
     finally:
         deleteDir(extract_directory)
+
+def get_new_violations(review_comment_cache, violation_cache):
+    review_comment_keys = set(review_comment_cache.keys())
+    violation_keys = set(violation_cache.keys())
+
+    return [
+        violation_keys[key] for key in violation_keys - review_comment_keys 
+    ]
+
+def get_obsolite_review_comments(review_comment_cache, violation_cache):
+    review_comment_keys = set(review_comment_cache.keys())
+    violation_keys = set(violation_cache.keys())
+
+    return [
+        review_comment_cache[key] for key in review_comment_keys - violation_keys
+    ]
+
+def get_violation_cache(violations):
+    violation_cache_map = {}
+    for violation in violations:
+        violation_cache_map[violation.md5Hash] = violation
+    
+    return violation_cache_map
+
+def get_review_comment_cache(g):
+    review_comments = retry(get_review_comments, timeout, interval)(g, 'github-actions[bot]', meta_data_id)
+
+    review_comment_map = {}
+    for review_comment in review_comments:
+        metadata = loadMetadata(meta_data_id, review_comment.body)
+        if metadata and hasattr(metadata, 'md5Hash') and metadata.md5Hash:
+            review_comment_map[metadata.md5Hash] = review_comment
+    
+    return review_comment_map
 
 def deleteDir(directory_to_delete):
     try:
