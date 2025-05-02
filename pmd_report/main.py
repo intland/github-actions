@@ -84,17 +84,13 @@ def get_new_violations(review_comment_cache, violation_cache):
     review_comment_keys = set(review_comment_cache.keys())
     violation_keys = set(violation_cache.keys())
 
-    return [
-        violation_keys[key] for key in violation_keys - review_comment_keys 
-    ]
+    return [violation_cache[key] for key in violation_keys - review_comment_keys]
 
 def get_obsolite_review_comments(review_comment_cache, violation_cache):
     review_comment_keys = set(review_comment_cache.keys())
     violation_keys = set(violation_cache.keys())
 
-    return [
-        review_comment_cache[key] for key in review_comment_keys - violation_keys
-    ]
+    return [review_comment_cache[key] for key in review_comment_keys - violation_keys]
 
 def get_violation_cache(violations):
     violation_cache_map = {}
@@ -102,6 +98,8 @@ def get_violation_cache(violations):
         violation_cache_map[violation.md5Hash] = violation
     
     return violation_cache_map
+
+
 
 def get_review_comment_cache(g):
     review_comments = retry(get_review_comments, timeout, interval)(g, 'github-actions[bot]', meta_data_id)
