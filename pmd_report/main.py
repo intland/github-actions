@@ -53,7 +53,7 @@ def main():
     artifact = jenkins.get_artifact(job_name, build_number, "pmd.zip")
     artifact.save(artifact.name)
     
-    extract_directory = uuid.uuid4()
+    extract_directory = str(uuid.uuid4())
     deleteDir(extract_directory)
 
     try:
