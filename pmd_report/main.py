@@ -72,11 +72,11 @@ def main():
         new_violations = get_new_violations(review_comment_cache, violation_cache)
         logging.info(f'{new_violations}')
 
-        any_comment_submitted = create_comments_from_issues(g, access_token, commit_sha, new_violations) # retry(create_comments_from_issues, timeout, interval)(g, access_token, commit_sha, new_violations)
-        if any_comment_submitted:
-            issue_comment(g, "pmd-report", "### PMD Quality check\n\n FAILED", keepLogsMetadata(commit_sha))
-        else:
-            issue_comment(g, "pmd-report", "### PMD Quality check\n\n PASSED", keepLogsMetadata(commit_sha))
+        ## any_comment_submitted = create_comments_from_issues(g, access_token, commit_sha, new_violations) # retry(create_comments_from_issues, timeout, interval)(g, access_token, commit_sha, new_violations)
+        ## if any_comment_submitted:
+        ##    issue_comment(g, "pmd-report", "### PMD Quality check\n\n FAILED", keepLogsMetadata(commit_sha))
+        ##else:
+        ##    issue_comment(g, "pmd-report", "### PMD Quality check\n\n PASSED", keepLogsMetadata(commit_sha))
     finally:
         deleteDir(extract_directory)
 
@@ -99,17 +99,18 @@ def get_violation_cache(violations):
     
     return violation_cache_map
 
-
-
 def get_review_comment_cache(g):
     review_comments = retry(get_review_comments, timeout, interval)(g, 'github-actions[bot]', meta_data_id)
 
     review_comment_map = {}
     for review_comment in review_comments:
+        logging.info(f'review_comment: {review_comment}')
         metadata = loadMetadata(meta_data_id, review_comment)
+        logging.info(f'metadata: {metadata}')
         if metadata and hasattr(metadata, 'md5Hash') and metadata.md5Hash:
             review_comment_map[metadata.md5Hash] = review_comment
     
+    logging.info(f'review_comment_map: {review_comment_map}')
     return review_comment_map
 
 def deleteDir(directory_to_delete):
