@@ -106,8 +106,9 @@ def get_review_comment_cache(g):
     for review_comment in review_comments:
         logging.info(f'review_comment: {review_comment}')
         metadata = loadMetadata(meta_data_id, review_comment)
-        logging.info(f'metadata: {metadata.md5Hash}')
-        if metadata and metadata.md5Hash:
+        if metadata:
+            md5_hash = metadata.get('md5Hash')
+            logging.info(f'md5_hash: {md5_hash}')
             review_comment_map[metadata.md5Hash] = review_comment
     
     logging.info(f'review_comment_map: {review_comment_map}')
