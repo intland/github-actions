@@ -8,6 +8,8 @@ import requests
 import os
 import zipfile
 import hashlib
+import uuid
+import shutil
 
 output_file = os.environ.get('GITHUB_OUTPUT')
 log_level = os.environ.get('INPUT_LOG_LEVEL', 'INFO')
@@ -19,7 +21,6 @@ interval = 10
 meta_data_id = 'pmd-violation'
 
 def main():
-    extract_directory = "extracted_pmd"
 
     # Required
     url = os.environ["INPUT_URL"]
@@ -52,29 +53,46 @@ def main():
     artifact = jenkins.get_artifact(job_name, build_number, "pmd.zip")
     artifact.save(artifact.name)
     
-    os.makedirs(extract_directory, exist_ok=True)
-    unzip_jenkins_artifact(artifact.name, extract_directory)
+    extract_directory = uuid.uuid4()
+    deleteDir(extract_directory)
 
-    violations = find_and_process_violations(extract_directory)
-    review_comments = retry(get_review_comments, timeout, interval)(g, 'github-actions[bot]', meta_data_id)
+    try:
+        os.makedirs(extract_directory, exist_ok=True)
+        unzip_jenkins_artifact(artifact.name, extract_directory)
 
-    existing_violations = []
-    for review_comment in review_comments:
-        for violation in violations:
-            if review_comment.path == violation.file and review_comment.line == violation.lineNumber:
-                metadata = loadMetadata(meta_data_id, review_comment.body)
-                logging.info(f'{metadata}')
-                logging.info(f'{metadata.md5Hash}')
-                if metadata.md5Hash == violation.md5Hash:
-                    existing_violations.append(violation)
+        violations = find_and_process_violations(extract_directory)
+        logging.info(f'{violations}')
 
-    new_violations = [v for v in violations if v not in existing_violations]
+        review_comments = retry(get_review_comments, timeout, interval)(g, 'github-actions[bot]', meta_data_id)
 
-    any_comment_submitted = create_comments_from_issues(g, access_token, commit_sha, new_violations) # retry(create_comments_from_issues, timeout, interval)(g, access_token, commit_sha, new_violations)
-    if any_comment_submitted:
-        issue_comment(g, "pmd-report", "### PMD Quality check\n\n FAILED", keepLogsMetadata(commit_sha))
-    else:
-        issue_comment(g, "pmd-report", "### PMD Quality check\n\n PASSED", keepLogsMetadata(commit_sha))
+        existing_violations = []
+        for review_comment in review_comments:
+            for violation in violations:
+                if review_comment.path == violation.file and review_comment.line == violation.lineNumber:
+                    metadata = loadMetadata(meta_data_id, review_comment.body)
+                    logging.info(f'{metadata}')
+                    logging.info(f'{metadata.md5Hash}')
+                    if metadata.md5Hash == violation.md5Hash:
+                        existing_violations.append(violation)
+
+        new_violations = [v for v in violations if v not in existing_violations]
+
+        any_comment_submitted = create_comments_from_issues(g, access_token, commit_sha, new_violations) # retry(create_comments_from_issues, timeout, interval)(g, access_token, commit_sha, new_violations)
+        if any_comment_submitted:
+            issue_comment(g, "pmd-report", "### PMD Quality check\n\n FAILED", keepLogsMetadata(commit_sha))
+        else:
+            issue_comment(g, "pmd-report", "### PMD Quality check\n\n PASSED", keepLogsMetadata(commit_sha))
+    finally:
+        deleteDir(extract_directory)
+
+def deleteDir(directory_to_delete):
+    try:
+        shutil.rmtree(directory_to_delete)
+        print(f"Directory '{directory_to_delete}' and its contents deleted.")
+    except FileNotFoundError:
+        print(f"Error: Directory '{directory_to_delete}' not found.")
+    except OSError as e:
+        print(f"Error deleting '{directory_to_delete}': {e}")
 
 def keepLogsMetadata(commit_sha):
     return json.dumps([{"build": {"commit_sha": commit_sha}}])
