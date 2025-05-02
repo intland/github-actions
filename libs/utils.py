@@ -233,7 +233,7 @@ def get_review_comments(github_api, user_name, id):
     logging.info(f"Get review comments for user: {user_name} and ID: {id}")
     for comment in comments:
         if comment.user.login == user_name:
-            metadata = loadMetadata(id, comment.body)
+            metadata = loadMetadata(id, comment)
             if metadata:
                 collected_comments.append(comment)
     
