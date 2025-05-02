@@ -68,7 +68,7 @@ def main():
         existing_violations = []
         for review_comment in review_comments:
             for violation in violations:
-                if review_comment.path == violation.file and review_comment.line == violation.lineNumber:
+                if review_comment.path == violation.file and review_comment.start_line == violation.lineNumber:
                     metadata = loadMetadata(meta_data_id, review_comment.body)
                     logging.info(f'{metadata}')
                     logging.info(f'{metadata.md5Hash}')
@@ -76,7 +76,7 @@ def main():
                         existing_violations.append(violation)
 
         new_violations = [v for v in violations if v not in existing_violations]
-
+        logging.info(f'{new_violations}')
         any_comment_submitted = create_comments_from_issues(g, access_token, commit_sha, new_violations) # retry(create_comments_from_issues, timeout, interval)(g, access_token, commit_sha, new_violations)
         if any_comment_submitted:
             issue_comment(g, "pmd-report", "### PMD Quality check\n\n FAILED", keepLogsMetadata(commit_sha))
