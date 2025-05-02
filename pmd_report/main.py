@@ -62,8 +62,10 @@ def main():
     for review_comment in review_comments:
         for violation in violations:
             if review_comment.path == violation.file and review_comment.line == violation.lineNumber:
-                md5Hash = loadMetadata(meta_data_id, review_comment.body)
-                if md5Hash == violation.md5Hash:
+                metadata = loadMetadata(meta_data_id, review_comment.body)
+                logging.info(f'{metadata}')
+                logging.info(f'{metadata.md5Hash}')
+                if metadata.md5Hash == violation.md5Hash:
                     existing_violations.append(violation)
 
     new_violations = [v for v in violations if v not in existing_violations]
@@ -75,7 +77,7 @@ def main():
         issue_comment(g, "pmd-report", "### PMD Quality check\n\n PASSED", keepLogsMetadata(commit_sha))
 
 def keepLogsMetadata(commit_sha):
-    return json.dumps([{"build": {"commit_sha": commit_sha}, "enabled": True}])
+    return json.dumps([{"build": {"commit_sha": commit_sha}}])
 
 def create_comments_from_issues(github_api, access_token, commit_sha, violations):
     logging.info(f'Number of violations: {len(violations)}')
@@ -125,7 +127,7 @@ class Violation:
         return (f"Violation(severity='{self.severity}', category='{self.category}', file='{self.file}', lineNumber={self.lineNumber}, message='{self.message[:50]}...')")
 
     def format_content(self):
-        metadata = createMetadata(meta_data_id, self.md5Hash)
+        metadata = createMetadata(meta_data_id, json.dumps({"md5Hash": self.md5Hash}))
         return f"""**{self.severity} - {self.category}**
 
     **Details:**
