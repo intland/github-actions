@@ -68,7 +68,8 @@ def main():
         existing_violations = []
         for review_comment in review_comments:
             for violation in violations:
-                if review_comment.path == violation.file and review_comment.start_line == violation.lineNumber:
+                logging.info(dir(review_comment))
+                if review_comment.path == violation.file:
                     metadata = loadMetadata(meta_data_id, review_comment.body)
                     logging.info(f'{metadata}')
                     logging.info(f'{metadata.md5Hash}')
