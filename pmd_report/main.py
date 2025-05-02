@@ -148,9 +148,9 @@ class Violation:
         metadata = createMetadata(meta_data_id, json.dumps({"md5Hash": self.md5Hash}))
         return f"""**{self.severity} - {self.category}**
 
-    **Details:**
-    {self.message}
-    """ + "\n" + metadata
+**Details:**
+{self.message}
+""" + "\n" + metadata
 
 def process_violation_file(file_path):
     violations = []
