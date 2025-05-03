@@ -67,16 +67,17 @@ def main():
         violation_cache = get_violation_cache(violations)
 
         obsolite_review_comments = get_obsolite_review_comments(review_comment_cache, violation_cache)
-        logging.info(f'{obsolite_review_comments}')
+        logging.info(f'obsolite_review_comments: {obsolite_review_comments}')
 
         new_violations = get_new_violations(review_comment_cache, violation_cache)
-        logging.info(f'{new_violations}')
+        logging.info(f'new_violations: {new_violations}')
 
-        ## any_comment_submitted = create_comments_from_issues(g, access_token, commit_sha, new_violations) # retry(create_comments_from_issues, timeout, interval)(g, access_token, commit_sha, new_violations)
-        ## if any_comment_submitted:
-        ##    issue_comment(g, "pmd-report", "### PMD Quality check\n\n FAILED", keepLogsMetadata(commit_sha))
-        ##else:
-        ##    issue_comment(g, "pmd-report", "### PMD Quality check\n\n PASSED", keepLogsMetadata(commit_sha))
+        retry(create_comments_from_issues, timeout, interval)(g, access_token, commit_sha, new_violations)
+        
+        if len(violations) > 0:
+            issue_comment(g, "pmd-report", "### PMD Quality check\n\n FAILED", keepLogsMetadata(commit_sha))
+        else:
+            issue_comment(g, "pmd-report", "### PMD Quality check\n\n PASSED", keepLogsMetadata(commit_sha))
     finally:
         deleteDir(extract_directory)
 
@@ -132,8 +133,7 @@ def create_comments_from_issues(github_api, access_token, commit_sha, violations
     number_of_comments = 0
     for violation in violations:
         content = violation.format_content()
-        #retry(create_review_comment, timeout, interval)
-        is_successful = create_review_comment(
+        is_successful = retry(create_review_comment, timeout, interval)(
             pr_url=pr.url,
             auth=access_token,
             commit_sha=commit_sha,
