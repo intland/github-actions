@@ -50,7 +50,7 @@ def main():
     jenkins = JenkinsWrapper(url, auth=auth)
     retry(jenkins.connect_to_jenkins, 60, 20)
 
-    artifact = jenkins.get_artifact(job_name, build_number, "pmd.zip")
+    artifact = jenkins.get_artifact(job_name, build_number, "violations.zip")
     artifact.save(artifact.name)
     
     extract_directory = str(uuid.uuid4())
