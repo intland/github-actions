@@ -84,7 +84,7 @@ def main():
 
 def delete_review_comments(obsolite_review_comments):
     for review_comment in obsolite_review_comments:
-        review_comments.delete()
+        review_comment.delete()
 
 def get_new_violations(review_comment_cache, violation_cache):
     review_comment_keys = set(review_comment_cache.keys())
