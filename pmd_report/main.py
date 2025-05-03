@@ -73,13 +73,18 @@ def main():
         logging.info(f'new_violations: {new_violations}')
 
         retry(create_comments_from_issues, timeout, interval)(g, access_token, commit_sha, new_violations)
-        
+        retry(delete_review_comments, timeout, interval)(obsolite_review_comments)
+
         if len(violations) > 0:
             issue_comment(g, "pmd-report", "### PMD Quality check\n\n FAILED", keepLogsMetadata(commit_sha))
         else:
             issue_comment(g, "pmd-report", "### PMD Quality check\n\n PASSED", keepLogsMetadata(commit_sha))
     finally:
         deleteDir(extract_directory)
+
+def delete_review_comments(obsolite_review_comments):
+    for review_comment in obsolite_review_comments:
+        review_comments.delete()
 
 def get_new_violations(review_comment_cache, violation_cache):
     review_comment_keys = set(review_comment_cache.keys())
