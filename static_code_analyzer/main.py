@@ -46,7 +46,7 @@ def extract_line_ranges_from_patch(patch):
         start_hunk_line = 0
         is_new = False
         while True:
-            is_new = is_new or is_new_file(lines)
+            is_new = False # is_new or is_new_file(lines)
             next_hunk_line = get_next_line_number(lines, start_hunk_line + 1)
             hunk_range = compute_hunk_range(lines, start_hunk_line, next_hunk_line)
             if len(hunk_range) > 0:
