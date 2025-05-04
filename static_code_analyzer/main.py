@@ -55,7 +55,7 @@ def extract_line_ranges_from_patch(patch):
             if start_hunk_line == len(lines):
                 break
 
-    return is_new, line_ranges
+    return line_ranges
 
 def collectChanges(pr_files):
     output_data = []
@@ -66,10 +66,10 @@ def collectChanges(pr_files):
         
         logging.info(f"File '{filename}' is processed")
 
-        is_new_file, lines = list(itertools.chain.from_iterable(extract_line_ranges_from_patch(patch)))
+        lines = list(itertools.chain.from_iterable(extract_line_ranges_from_patch(patch)))
 
         if len(lines) > 0:
-            output_data.append({ "path": filename, "lineNumbers": lines, "isNewFile": is_new_file})
+            output_data.append({ "path": filename, "lineNumbers": lines, "isNewFile": False})
 
     return output_data
 
