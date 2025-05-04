@@ -55,7 +55,7 @@ def extract_line_ranges_from_patch(patch):
             if start_hunk_line == len(lines):
                 break
 
-    return (is_new, line_ranges)
+    return is_new, line_ranges
 
 def collectChanges(pr_files):
     output_data = []
