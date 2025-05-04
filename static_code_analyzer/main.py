@@ -20,6 +20,9 @@ def get_next_line_number(lines, start_from):
             return original_index
     return len(lines)
 
+def is_new_file(line):
+    return re.match(r"^@@ -0,0 \+\d+,\d+ @@.*", line) is not None
+
 def get_hunk_start(line):
     return int(re.search(r"@@.*\+(\d+),(\d+) @@.*", line).group(1))
 
@@ -41,7 +44,9 @@ def extract_line_ranges_from_patch(patch):
         lines = [line for line in patch.splitlines() if not line.startswith('-')]
 
         start_hunk_line = 0
+        is_new_file = false
         while True:
+            is_new_file = is_new_file or is_new_file(lines)
             next_hunk_line = get_next_line_number(lines, start_hunk_line + 1)
             hunk_range = compute_hunk_range(lines, start_hunk_line, next_hunk_line)
             if len(hunk_range) > 0:
@@ -50,7 +55,7 @@ def extract_line_ranges_from_patch(patch):
             if start_hunk_line == len(lines):
                 break
 
-    return line_ranges
+    return (is_new_file, line_ranges)
 
 def collectChanges(pr_files):
     output_data = []
@@ -61,10 +66,10 @@ def collectChanges(pr_files):
         
         logging.info(f"File '{filename}' is processed")
 
-        lines = list(itertools.chain.from_iterable(extract_line_ranges_from_patch(patch)))
+        (is_new_file, lines) = list(itertools.chain.from_iterable(extract_line_ranges_from_patch(patch)))
 
         if len(lines) > 0:
-            output_data.append({ "path": filename, "lineNumbers": lines })
+            output_data.append({ "path": filename, "lineNumbers": lines, "isNewFile": is_new_file})
 
     return output_data
 
