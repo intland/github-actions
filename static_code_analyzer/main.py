@@ -44,9 +44,9 @@ def extract_line_ranges_from_patch(patch):
         lines = [line for line in patch.splitlines() if not line.startswith('-')]
 
         start_hunk_line = 0
-        is_new_file = False
+        is_new = False
         while True:
-            is_new_file = is_new_file or is_new_file(lines)
+            is_new = is_new or is_new_file(lines)
             next_hunk_line = get_next_line_number(lines, start_hunk_line + 1)
             hunk_range = compute_hunk_range(lines, start_hunk_line, next_hunk_line)
             if len(hunk_range) > 0:
@@ -55,7 +55,7 @@ def extract_line_ranges_from_patch(patch):
             if start_hunk_line == len(lines):
                 break
 
-    return (is_new_file, line_ranges)
+    return (is_new, line_ranges)
 
 def collectChanges(pr_files):
     output_data = []
