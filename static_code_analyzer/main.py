@@ -66,7 +66,7 @@ def collectChanges(pr_files):
         
         logging.info(f"File '{filename}' is processed")
 
-        (is_new_file, lines) = list(itertools.chain.from_iterable(extract_line_ranges_from_patch(patch)))
+        is_new_file, lines = list(itertools.chain.from_iterable(extract_line_ranges_from_patch(patch)))
 
         if len(lines) > 0:
             output_data.append({ "path": filename, "lineNumbers": lines, "isNewFile": is_new_file})
