@@ -18,7 +18,7 @@ logging.basicConfig(format='JENKINS_ACTION: %(message)s', level=log_level)
 timeout = 600
 interval = 10
 
-meta_data_id = 'pmd-violation'
+meta_data_id = 'static-code-analyzer-violation'
 
 def main():
 
@@ -76,9 +76,9 @@ def main():
         retry(delete_review_comments, timeout, interval)(obsolite_review_comments)
 
         if len(violations) > 0:
-            issue_comment(g, "pmd-report", "### PMD Quality check\n\n FAILED", keepLogsMetadata(commit_sha))
+            issue_comment(g, "static-code-analyzer-violation-report", "### Static Code Analyzer check\n\n FAILED", keepLogsMetadata(commit_sha))
         else:
-            issue_comment(g, "pmd-report", "### PMD Quality check\n\n PASSED", keepLogsMetadata(commit_sha))
+            issue_comment(g, "static-code-analyzer-violation-report", "### Static Code Analyzer check\n\n PASSED", keepLogsMetadata(commit_sha))
     finally:
         deleteDir(extract_directory)
 

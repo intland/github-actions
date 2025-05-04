@@ -1,5 +1,5 @@
 FROM intland/github-runner
 ADD libs/ /app/libs/
-ADD pmd/main.py /app/
+ADD static_code_analyzer/main.py /app/
 
 CMD ["/app/main.py"]

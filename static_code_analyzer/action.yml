@@ -1,0 +1,10 @@
+name: "StaticCodeAnalyzer"
+description: "Collect file line changes for static code analyzer"
+author: "Sandor Zelei"
+inputs:
+  access_token:
+    description: "GitHub token"
+    required: true
+runs:
+  using: "docker"
+  image: "../static_code_analyzer.Dockerfile"

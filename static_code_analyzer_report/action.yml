@@ -1,5 +1,5 @@
-name: "Jenkins-Action"
-description: "Report PMD issues"
+name: "StaticCodeAnalyzerReporter"
+description: "Report Static Code Analyzer issues"
 author: "Sandor Zelei"
 inputs:
   url:
@@ -28,7 +28,7 @@ inputs:
   display_job_name:
     description: "Job name used for link"
     required: false
-    default: 'PMD'
+    default: 'static_code_analyzer'
 runs:
   using: "docker"
-  image: "../pmd_report.Dockerfile"
+  image: "../static_code_analyzer_report.Dockerfile"
