@@ -44,7 +44,7 @@ def extract_line_ranges_from_patch(patch):
         lines = [line for line in patch.splitlines() if not line.startswith('-')]
 
         start_hunk_line = 0
-        is_new_file = false
+        is_new_file = False
         while True:
             is_new_file = is_new_file or is_new_file(lines)
             next_hunk_line = get_next_line_number(lines, start_hunk_line + 1)
