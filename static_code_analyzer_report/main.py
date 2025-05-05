@@ -76,9 +76,9 @@ def main():
         retry(delete_review_comments, timeout, interval)(obsolite_review_comments)
 
         if len(violations) > 0:
-            issue_comment(g, "static-code-analyzer-violation-report", "### Static Code Analyzer check\n\n FAILED", keepLogsMetadata(commit_sha))
+            retry(issue_comment, timeout, interval)(g, "static-code-analyzer-violation-report", "### Static Code Analyzer check\n\n FAILED", keepLogsMetadata(commit_sha))
         else:
-            issue_comment(g, "static-code-analyzer-violation-report", "### Static Code Analyzer check\n\n PASSED", keepLogsMetadata(commit_sha))
+            retry(issue_comment, timeout, interval)(g, "static-code-analyzer-violation-report", "### Static Code Analyzer check\n\n PASSED", keepLogsMetadata(commit_sha))
     finally:
         deleteDir(extract_directory)
 
