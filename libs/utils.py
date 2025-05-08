@@ -258,12 +258,15 @@ def create_review_comment(
         'body': content,
         'commit_id': commit_sha,
         'path': path,
-        'line': line,
         'side': 'RIGHT'
     }
-    if start_line:
-        payload['start_line'] = start_line
-        payload['start_side'] = 'RIGHT'
+    if line == -1:
+        payload['subject_type'] = 'file'
+    else:
+        payload['line'] = line
+        if start_line:
+            payload['start_line'] = start_line
+            payload['start_side'] = 'RIGHT'
 
     try:
         r = requests.post(
