@@ -145,7 +145,8 @@ def create_comments_from_issues(github_api, access_token, commit_sha, violations
             content=content,
             path=violation.file,
             line=violation.lineNumber,
-            start_line=None
+            start_line=None,
+            is_global=violation.isGlobal
         )
         if is_successful:
             number_of_comments += 1
@@ -155,12 +156,13 @@ def create_comments_from_issues(github_api, access_token, commit_sha, violations
     return number_of_comments > 0
 
 class Violation:
-    def __init__(self, message, file, severity, category, lineNumber):
+    def __init__(self, message, file, severity, category, lineNumber, isGlobal):
         self.message = message
         self.file = file
         self.severity = severity
         self.category = category
         self.lineNumber = lineNumber
+        self.isGlobal = isGlobal
         self.md5Hash = self._compute_md5_hash()
 
     def _compute_md5_hash(self):
@@ -174,7 +176,7 @@ class Violation:
         return NotImplemented
 
     def __repr__(self):
-        return (f"Violation(severity='{self.severity}', category='{self.category}', file='{self.file}', lineNumber={self.lineNumber}, message='{self.message[:50]}...')")
+        return (f"Violation(isGlobal='{self.isGlobal}', severity='{self.severity}', category='{self.category}', file='{self.file}', lineNumber={self.lineNumber}, message='{self.message[:50]}...')")
 
     def format_content(self):
         metadata = createMetadata(meta_data_id, json.dumps({"md5Hash": self.md5Hash}))
@@ -197,7 +199,8 @@ def process_violation_file(file_path):
                             item["file"],
                             item["severity"],
                             item["category"],
-                            item["lineNumber"]
+                            item["lineNumber"],
+                            bool(item["global"])
                         )
                         violations.append(violation)
                     else:
