@@ -257,7 +257,7 @@ def create_review_comment(
     payload = {
         'body': content,
         'commit_id': commit_sha,
-        'path': path
+        'path': path,
         'side': 'RIGHT'
     }
     if line == -1:
