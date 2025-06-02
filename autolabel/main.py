@@ -25,7 +25,8 @@ def main():
     # Team Labels
     teams = getTeams(pr, (codebeamer_user, codebeamer_password))
     for team in teams:
-        pr.add_to_labels(team)
+        pr.add_to_labels("test-team1")
+        break
 
     # Priority Label
     priority = get_ticket_priority(pr, (codebeamer_user, codebeamer_password))
