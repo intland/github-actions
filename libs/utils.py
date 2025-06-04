@@ -401,6 +401,7 @@ def find_params(build, param_name):
 
 def get_missing_commits_from_upstream(github, repo_name, dest_user, dest_branch, source_branch):
     repository = github.get_repo(repo_name)
+    logging.info(f"repo:{repo_name} duser:{dest_user} dbranch:{dest_branch} sbranch:{source_branch}")
     return repository.compare(quote_plus(f'{dest_user}:{dest_branch}'), quote_plus(source_branch)).behind_by
 
 
