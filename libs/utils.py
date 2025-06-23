@@ -212,9 +212,12 @@ def issue_comment(githubApi, metadata_id, content, metadata={}):
     content += "\n" + createMetadata(metadata_id, metadata)
     if comment:
         logging.info("Comment is deleted")
-        comment.delete()
+        try:
+            comment.delete()
+            logging.info("New comment is created")
+        except Exception as e:
+            logging.info(f'Comment can not be deleted, error code: {e.response.status_code}')
 
-    logging.info("New comment is created")
     pr.create_issue_comment(content)
 
 def delete_review_comments(github_api, user_name):
