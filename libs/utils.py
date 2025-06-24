@@ -216,7 +216,10 @@ def issue_comment(githubApi, metadata_id, content, metadata={}):
             comment.delete()
             logging.info("New comment is created")
         except Exception as e:
-            logging.info(f'Comment can not be deleted, error code: {e.response.status_code}')
+            if e.response.status_code == 404:
+                logging.info(f'Comment can not be found which is expected somettimes')
+            else:
+                raise Exception(f"Comment can not be deleted, error code: {e.response.status_code}. Message: {e.response.text}")
 
     pr.create_issue_comment(content)
 
